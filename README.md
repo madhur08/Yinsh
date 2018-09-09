@@ -1,7 +1,4 @@
-# Yinsh-Player
-
-## Problem
-The goal is to learn the adversarial search algorithms (mini- max and alpha beta pruning), which arise in sequential deterministic adversarial situations to make a Yinsh player.
+# Yinsh
 
 ## Setup
 ![alt text](https://github.com/madhur08/Yinsh-Player/blob/master/Images/yinsh_board.jpg) <br />
