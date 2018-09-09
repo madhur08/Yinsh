@@ -14,4 +14,4 @@ build/%.o: src/%.cpp
 
 .PHONY: clean
 clean:
-	rm -f ../Python/*.pyc ../build/*.o core
+	rm -f Python/*.pyc build/*.o core
