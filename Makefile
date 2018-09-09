@@ -4,11 +4,11 @@ LDFLAGS = -L./
 OBJECTS = main.o
 CFLAGS = -Wall -Wextra -O0 -ggdb -std=c++11 -pedantic
 
-all: $(OBJECTS)
+all: build/$(OBJECTS)
 	@mkdir -p bin
 	g++ $(CFLAGS) -o bin/$(PROGNAME) build/*.o $(LIBS) $(INCLUDES) $(LDFLAGS)
 
-build/%.o: src/%.cpp include/%.h
+build/%.o: src/%.cpp
 	@mkdir -p build
 	g++ -c $(CFLAGS) $(INCLUDES) -o $@ $<
 
