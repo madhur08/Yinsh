@@ -4,7 +4,7 @@
 The goal is to learn the adversarial search algorithms (mini- max and alpha beta pruning), which arise in sequential deterministic adversarial situations to make a Yinsh player.
 
 ## Setup
-![alt text](https://github.com/madhur08/Yinsh-Player/blob/master/Images/yinsh_board.jpg)
+![alt text](https://github.com/madhur08/Yinsh-Player/blob/master/Images/yinsh_board.jpg) <br />
 The game board is almost a regular hexagon of side N as shown. There are M rings with each player. Typical values for N are 5 and of M is also 5.
 
 ## Objective
