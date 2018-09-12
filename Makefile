@@ -1,15 +1,19 @@
 PROGNAME = code
-INCLUDES = -I/usr/local/include -I../include
+INCLUDES = -I/usr/local/include -I./include
 LDFLAGS = -L./
-OBJECTS = main.o
+ODIR = build
+SDIR = src
+IDIR = include
+_OBJECTS = main.o Game.o Search.o
+OBJECTS = $(patsubst %, $(ODIR)/%,$(_OBJECTS))
 CFLAGS = -Wall -Wextra -O0 -ggdb -std=c++11 -pedantic
 
-all: build/$(OBJECTS)
+all: $(OBJECTS)
 	@mkdir -p bin
-	g++ $(CFLAGS) -o bin/$(PROGNAME) build/*.o $(LIBS) $(INCLUDES) $(LDFLAGS)
+	g++ $(CFLAGS) -o bin/$(PROGNAME) $(OBJECTS) $(LIBS) $(INCLUDES) $(LDFLAGS)
 
-build/%.o: src/%.cpp
-	@mkdir -p build
+$(ODIR)/%.o: $(SDIR)/%.cpp $(IDIR)/*.h
+	@mkdir -p $(ODIR)
 	g++ -c $(CFLAGS) $(INCLUDES) -o $@ $<
 
 .PHONY: clean
