@@ -134,7 +134,7 @@ void State::playMove(std::string str)
             int index = 0;
             if (playerID == 1)
             {
-                for (int i = 0; i < ringPos2.size(); ++i)
+                for (unsigned int i = 0; i < ringPos2.size(); ++i)
                     if (ringPos2[i] == coor1)
                     {
                         index = i;
@@ -143,7 +143,7 @@ void State::playMove(std::string str)
             }
             else
             {
-                for (int i = 0; i < ringPos1.size(); ++i)
+                for (unsigned int i = 0; i < ringPos1.size(); ++i)
                     if (ringPos1[i] == coor1)
                     {
                         index = i;
@@ -195,7 +195,7 @@ void State::playMove(std::string str)
             int index = 0;
             if (playerID == 1)
             {
-                for (int i = 0; i < ringPos2.size(); ++i)
+                for (unsigned int i = 0; i < ringPos2.size(); ++i)
                     if (ringPos2[i] == coor1)
                     {
                         index = i;
@@ -204,7 +204,7 @@ void State::playMove(std::string str)
             }
             else
             {
-                for (int i = 0; i < ringPos1.size(); ++i)
+                for (unsigned int i = 0; i < ringPos1.size(); ++i)
                     if (ringPos1[i] == coor1)
                     {
                         index = i;
@@ -410,7 +410,7 @@ bool State::executeNext(State &nextState)
     {
         for (int p = move0.startPos.second + 1; p < 6 * move0.startPos.first; ++p)
         {
-            if (!(move0.startPos.first == boardSize) || !(p % boardSize == 0))
+            if (!((unsigned int)move0.startPos.first == boardSize) || !(p % boardSize == 0))
             {
                 std::pair<int, int> coor = moveToCoordinate(move0.startPos.first, p);
                 if (ringPlayer1[boardSize + coor.first][boardSize + coor.second] == 0)
@@ -421,9 +421,9 @@ bool State::executeNext(State &nextState)
                 }
             }
         }
-        for (int r = move0.startPos.first + 1; r <= boardSize; ++r)
+        for (unsigned int r = move0.startPos.first + 1; r <= boardSize; ++r)
         {
-            for (int p = 0; p < r * 6; ++p)
+            for (unsigned int p = 0; p < r * 6; ++p)
             {
                 if (!(r == boardSize) || !(p % boardSize == 0))
                 {
@@ -746,8 +746,8 @@ void State::makeAllPossibleCombinations()
             maxRings = ringPos2.size();
         else
             maxRings = ringPos1.size();
-        for (int i = 0; i < possibleRows.size(); ++i)
-            for (int j = i + 1; j < possibleRows.size(); ++i)
+        for (unsigned int i = 0; i < possibleRows.size(); ++i)
+            for (unsigned int j = i + 1; j < possibleRows.size(); ++i)
             {
                 move a = possibleRows[i];
                 move b = possibleRows[j];
@@ -769,7 +769,7 @@ void State::makeAllPossibleCombinations()
                 }
             }
         if (possibleRowMoves.size() == 0)
-            for (int i = 0; i < possibleRows.size(); ++i)
+            for (unsigned int i = 0; i < possibleRows.size(); ++i)
                 for (int r = maxRings; r >= 0; --r)
                 {
                     possibleRows[i].index = r;
@@ -818,7 +818,7 @@ void State::makeRows(State &nextState, vector<std::pair<int, int>> flipped, std:
     bool check = true, once = false;
     if (start.first - start.second == end.first - end.second)
     {
-        for (int f = 0; f != flipped.size(); ++f)
+        for (unsigned int f = 0; f != flipped.size(); ++f)
         {
             if (f > 0 && std::abs(flipped[f - 1].first - flipped[f].first) > 1 && !once)
                 check = true;
@@ -845,7 +845,7 @@ void State::makeRows(State &nextState, vector<std::pair<int, int>> flipped, std:
     }
     else if (start.first == end.first)
     {
-        for (int f = 0; f != flipped.size(); ++f)
+        for (unsigned int f = 0; f != flipped.size(); ++f)
         {
             if (f > 0 && std::abs(flipped[f - 1].second - flipped[f].second) > 1 && !once)
                 check = true;
@@ -871,7 +871,7 @@ void State::makeRows(State &nextState, vector<std::pair<int, int>> flipped, std:
     }
     else if (start.second == end.second)
     {
-        for (int f = 0; f != flipped.size(); ++f)
+        for (unsigned int f = 0; f != flipped.size(); ++f)
         {
             if (f > 0 && std::abs(flipped[f - 1].first - flipped[f].first) > 1 && !once)
                 check = true;
@@ -898,7 +898,6 @@ vector<std::pair<int, int>> State::flipMarkers(std::pair<int, int> start, std::p
 {
     nextState.flip(start.first, start.second);
     vector<std::pair<int, int>> flipped;
-    bool check = true, once = false;
     if (start.first - start.second == end.first - end.second)
     {
         int startx = std::min(start.first, end.first);

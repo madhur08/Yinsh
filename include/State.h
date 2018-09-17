@@ -28,24 +28,24 @@ private:
     move(std::pair<int, int>, std::pair<int, int>);
     move(int);
   };
-  int playerID, boardSize;
+  unsigned int playerID, boardSize;
 
-  int numMarkers1, numMarkers2;
-  int score1, score2;
+  unsigned int numMarkers1, numMarkers2;
+  unsigned int score1, score2;
   vector<vector<bool> > markerPlayer1;
   vector<vector<bool> > markerPlayer2;
   vector<vector<bool> > ringPlayer1;
   vector<vector<bool> > ringPlayer2;
-  int reachability1, reachability2;
+  unsigned int reachability1, reachability2;
   vector<std::pair<int, int> > ringPos1;
   vector<std::pair<int, int> > ringPos2;
 
   vector<move> moves;
   vector<move> possibleRows;
   vector<std::pair<move, move> > possibleRowMoves;
-  int lastRowMove;
+  unsigned int lastRowMove;
   std::string playedMove;
-  int currentMove;
+  unsigned int currentMove;
   move move0;
 
   void appendToCurrentMove(std::string);
@@ -56,7 +56,6 @@ private:
   int addPossibleMoves(std::pair<int, int>, int);
   std::pair<int, int> maxIncrement(std::pair<int, int>, int);
   int addPossibleMovesDir(int, int, int, int, int);
-  bool executeNext(State &);
   void addRing(std::pair<int, int>, State &);
   void moveRing(move, State &);
   vector<std::pair<int, int> > flipMarkers(std::pair<int, int>, std::pair<int, int>, State &);
@@ -77,6 +76,7 @@ public:
   int sumMarkersInControl1();
   int sumMarkersInControl2();
   void playMove(std::string);
+  bool executeNext(State &);
   State() = default;
   State(int, int);
   State(int, int, std::string);
