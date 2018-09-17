@@ -1,33 +1,37 @@
 #include <iostream>
-
+#include <Search.h>
 using namespace std;
 
 // Sample C++ Code
 int main(int argc, char **argv)
 {
 
-    int player_id, board_size, time_limit;
+    int playerID, boardSize, timeLimit;
     string move;
     // Get input from server about game specifications
-    cin >> player_id >> board_size >> time_limit;
+    cin >> playerID >> boardSize >> timeLimit;
 
-    if (player_id == 2)
+    if (playerID == 2)
     {
         // Get other player's move
-        cin >> move;
-
+        getline(cin,move);
+        Search search(boardSize, timeLimit, move);
         while (true)
         {
-            cout << "P 1 0" << endl;
-            cin >> move;
+            cout<<search.nextMove();
+            getline(cin,move);
+            search.playMove(move);
         }
     }
-    else if (player_id == 1)
+    else if (playerID == 1)
     {
+        Search search(boardSize, timeLimit);
+        cout<<"P 0 0"<<std::endl;
         while (true)
         {
-            cout << "P 0 0" << endl;
-            cin >> move;
+            getline(cin,move);
+            search.playMove(move);
+            cout<<search.nextMove();
         }
     }
     return 0;

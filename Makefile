@@ -4,7 +4,7 @@ LDFLAGS = -L./
 ODIR = build
 SDIR = src
 IDIR = include
-_OBJECTS = main.o Game.o Search.o
+_OBJECTS = main.o State.o Search.o
 OBJECTS = $(patsubst %, $(ODIR)/%,$(_OBJECTS))
 CFLAGS = -Wall -Wextra -O0 -ggdb -std=c++11 -pedantic
 
