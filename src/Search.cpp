@@ -1,5 +1,6 @@
 #include "Search.h"
 #include <float.h>
+#define winningScore 3
 Search::Search(int boardSize, int timeLimit, std::string move)
     : state(1, boardSize, move)
 {
@@ -31,19 +32,19 @@ std::string Search::nextMove (int depth)
     //int nextstate;
     double alpha=-1*DBL_MAX, beta=DBL_MAX, value=-1*DBL_MAX;
     double fvalue;
-    State nextstate();
+    State nextstate(state);
     //for(int i=0; i < n; i++)
     branches=0;
     while(true)
     {
-        State newState(state);
-        if (!current.executeNext(newState))
+        State newState(nextstate);
+        if (!nextstate.executeNext(newState))
             break;
-        fvalue=funcMin( alpha, beta, depth-1, newState )
+        fvalue=funcMin( alpha, beta, depth-1, newState );
         branches++;
         if( fvalue > value )
         {
-            nextstate = newState;
+            state = newState;
             value = fvalue;
         }
         if ( value > alpha )
@@ -52,9 +53,10 @@ std::string Search::nextMove (int depth)
         // if( alpha > beta )
         //     break;
     }
-    return nextstate.getMove();
+    //state=nextState;
+    return state.getMove();
 }
-double Search::funcMin( double alpha, double beta, int depth, State current )
+double Search::funcMin( double alpha, double beta, int depth, State& current )
 {
     if(depth == 0 || current.getScore1() == winningScore || current.getScore2() == winningScore )   // >= karna hai kya??
         return evalFunction( current );
@@ -69,7 +71,7 @@ double Search::funcMin( double alpha, double beta, int depth, State current )
             State newState(current);
             if (!current.executeNext(newState))
                 break;
-            fvalue=funcMax( alpha, beta, depth-1, newState )
+            fvalue=funcMax( alpha, beta, depth-1, newState );
             if( fvalue < value )
                 value = fvalue;
 
@@ -83,7 +85,7 @@ double Search::funcMin( double alpha, double beta, int depth, State current )
     }
 }
 
-double Search::funcMax( double alpha, double beta, int depth, State current )
+double Search::funcMax( double alpha, double beta, int depth, State& current )
 {
     if(depth == 0 || current.getScore1() == winningScore || current.getScore2() == winningScore )
         return evalFunction( current );
@@ -98,7 +100,7 @@ double Search::funcMax( double alpha, double beta, int depth, State current )
             State newState(current);
             if (!current.executeNext(newState))
                 break;
-            fvalue=funcMin( alpha, beta, depth-1, newState )
+            fvalue=funcMin( alpha, beta, depth-1, newState );
             if( fvalue > value )
                 value = fvalue;
         
@@ -112,9 +114,9 @@ double Search::funcMax( double alpha, double beta, int depth, State current )
     }
 }
 
-double Search::evalFunction(State current,int player)
+double Search::evalFunction(State& current)
 {
-    if ( player == 1)  //our player is 1
+    if ( playerID == 1)  //our player is 1
     {
         
         if (current.getScore1() == 3)

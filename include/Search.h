@@ -12,9 +12,9 @@ public:
   Search(int, int, std::string);
   Search(int, int);
   std::string nextMove (int depth );
-  double funcMin( double alpha, double beta, int depth, State current );
-  double funcMax( double alpha, double beta, int depth, State current );
-  double evalFunction(State current,int player);
+  double funcMin( double alpha, double beta, int depth, State& current );
+  double funcMax( double alpha, double beta, int depth, State& current );
+  double evalFunction(State& current);
   void playMove(std::string);
 };
 
