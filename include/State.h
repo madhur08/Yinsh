@@ -41,8 +41,10 @@ private:
 
   int getScore1();
   int getScore2();
-  int State::numMarkers1();
-  int State::numMarkers2();
+  int State::getMarkers1();
+  int State::getMarkers2();
+  int State::sumMarkersInControl1();
+  int State::sumMarkersInControl2();
   void appendToCurrentMove(std::string);
   void intializeMatrix(vector<vector<bool>>, int);
   std::pair<int, int> moveToCoordinate(int, int);

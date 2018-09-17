@@ -48,13 +48,13 @@ int State::getScore1(){
 int State::getScore2(){
     return score2;
 }
-int State::numMarkers1(){
+int State::getMarkers1(){
     return numMarkers1;
 }
-int State::numMarkers2(){
+int State::getMarkers2(){
     return numMarkers2;
 }
-int State::getReachability1(){
+int State::sumMarkersInControl1(){
     if(reachability1 != 0)
         return reachability1;
     if(playerID == 1){
@@ -66,7 +66,7 @@ int State::getReachability1(){
     possibleMoves();
     return reachability1;
 }
-int State::getReachability1(){
+int State::sumMarkersInControl2(){
     if(reachability2 != 0)
         return reachability2;
     if(playerID == 2){
