@@ -3,7 +3,7 @@
 using namespace std;
 
 // Sample C++ Code
-int main(int argc, char **argv)
+int main()
 {
 
     int playerID, boardSize, timeLimit;
@@ -18,7 +18,7 @@ int main(int argc, char **argv)
         Search search(boardSize, timeLimit, move);
         while (true)
         {
-            cout<<search.nextMove();
+            cout<<search.nextMove(3);
             getline(cin,move);
             search.playMove(move);
         }
@@ -31,7 +31,7 @@ int main(int argc, char **argv)
         {
             getline(cin,move);
             search.playMove(move);
-            cout<<search.nextMove();
+            cout<<search.nextMove(3);
         }
     }
     return 0;
