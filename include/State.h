@@ -44,9 +44,9 @@ private:
   vector<move> possibleRows;
   vector<std::pair<move, move> > possibleRowMoves;
   vector<std::pair<move, move> > possibleRowMovesBeforeMove;
-  size_t lastRowMove;
-  size_t currentMove;
-  size_t lastRowMoveBeforeMove;
+  unsigned int lastRowMove;
+  unsigned int currentMove;
+  unsigned int lastRowMoveBeforeMove;
   bool removeBeforeMove;
   move move0;
   std::string playedMove;

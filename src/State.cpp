@@ -49,10 +49,6 @@ State::State(const State &state) : move0(-1)
     ringPlayer2 = state.ringPlayer2;
     ringPos1 = state.ringPos1;
     ringPos2 = state.ringPos2;
-    possibleRows.resize(0);
-    possibleRowMoves.resize(0);
-    possibleRowMovesBeforeMove.resize(0);
-    moves.resize(0);
     removeBeforeMove = 0;
     lastRowMoveBeforeMove = 0;
     lastRowMove = currentMove = reachability1 = reachability2 = 0;
@@ -67,10 +63,6 @@ State::State(int playerID, int boardSize) : move0(-1)
     initializeMatrix(markerPlayer2, boardSize);
     initializeMatrix(ringPlayer1, boardSize);
     initializeMatrix(ringPlayer2, boardSize);
-    possibleRows.resize(0);
-    possibleRowMoves.resize(0);
-    possibleRowMovesBeforeMove.resize(0);
-    moves.resize(0);
     removeBeforeMove = 0;
     lastRowMoveBeforeMove = 0;
     playMove(std::string("P 0 0\n"));
@@ -85,10 +77,6 @@ State::State(int playerID, int boardSize, std::string move) : move0(-1)
     initializeMatrix(markerPlayer2, boardSize);
     initializeMatrix(ringPlayer1, boardSize);
     initializeMatrix(ringPlayer2, boardSize);
-    possibleRows.resize(0);
-    possibleRowMoves.resize(0);
-    possibleRowMovesBeforeMove.resize(0);
-    moves.resize(0);
     removeBeforeMove = 0;
     lastRowMoveBeforeMove = 0;
     playMove(move);
@@ -458,10 +446,13 @@ void State::storeMove(State &nextState, moveType type, std::pair<int, int> coord
         break;
     case MoveRing:
         nextState.appendToCurrentMove("S " + std::to_string(coord1.first) + ' ' + std::to_string(coord1.second) + " M " + std::to_string(coord2.first) + ' ' + std::to_string(coord2.second) + ' ');
+        break;
     case RemoveRow:
         nextState.appendToCurrentMove("RS " + std::to_string(coord1.first) + ' ' + std::to_string(coord1.second) + " RE " + std::to_string(coord2.first) + ' ' + std::to_string(coord2.second) + ' ');
+        break;
     case RemoveRing:
         nextState.appendToCurrentMove("X " + std::to_string(coord1.first) + ' ' + std::to_string(coord1.second) + ' ');
+        break;
     }
 }
 void State::removeAndStore(const std::pair<move, move> &a)
@@ -523,7 +514,7 @@ bool State::executeNext(State &nextState)
             }
         }
     }
-    else if (lastRowMove < (possibleRowMoves.size() - 1))
+    else if ((int)lastRowMove < (int)(possibleRowMoves.size() - 1))
     {
         if (removeBeforeMove)
         {
@@ -572,13 +563,17 @@ bool State::executeNext(State &nextState)
             moveRing(moves[currentMove], nextState);
             move0 = moves[currentMove];
             makeRows(nextState, flipMarkers(moves[currentMove].startPos, moves[currentMove].finalPos, nextState), moves[currentMove].startPos, moves[currentMove].finalPos);
+            ++currentMove;
             if (possibleRows.empty())
+            {
+                nextState.playerID = 3 - playerID;
                 return true;
+            }
             makeAllPossibleCombinations(possibleRowMoves);
             nextState.removeAndStore(possibleRowMoves[0]);
-            currentMove++;
             moveExecuted = true;
             nextState.playerID = 3 - playerID;
+            
         }
     }
     return moveExecuted;
@@ -901,7 +896,7 @@ vector<State::move> State::checkRow(std::pair<int, int> coor, int dir)
             ;
         end = i - 1;
 
-        for (i = -1; ((playerID == 1) && (boardSize + coor.first + i < 11) && (markerPlayer1[boardSize + coor.first + i][boardSize + coor.second] == 1)) || ((playerID == 2) && (boardSize + coor.first + i < 11) && (markerPlayer2[boardSize + coor.first + i][boardSize + coor.second] == 1)); --i)
+        for (i = -1; ((playerID == 1) && (boardSize + coor.first + i > 0) && (markerPlayer1[boardSize + coor.first + i][boardSize + coor.second] == 1)) || ((playerID == 2) && (boardSize + coor.first + i > 0 ) && (markerPlayer2[boardSize + coor.first + i][boardSize + coor.second] == 1)); --i)
             ;
         start = i + 1;
 
@@ -915,7 +910,7 @@ vector<State::move> State::checkRow(std::pair<int, int> coor, int dir)
             ;
         end = i - 1;
 
-        for (i = -1; ((playerID == 1) && (boardSize + coor.second + i < 11) && (markerPlayer2[boardSize + coor.first][boardSize + coor.second + i] == 1)) || ((playerID == 2) && (boardSize + coor.second + i < 11) && (markerPlayer1[boardSize + coor.first][boardSize + coor.second + i] == 1)); --i)
+        for (i = -1; ((playerID == 1) && (boardSize + coor.second + i > 0) && (markerPlayer2[boardSize + coor.first][boardSize + coor.second + i] == 1)) || ((playerID == 2) && (boardSize + coor.second + i > 0) && (markerPlayer1[boardSize + coor.first][boardSize + coor.second + i] == 1)); --i)
             ;
         start = i + 1;
 
@@ -929,7 +924,7 @@ vector<State::move> State::checkRow(std::pair<int, int> coor, int dir)
             ;
         end = i - 1;
 
-        for (i = -1; ((playerID == 1) && (boardSize + coor.first + i < 11) && (boardSize + coor.second + i < 11) && (markerPlayer2[boardSize + coor.first + i][boardSize + coor.second + i] == 1)) || ((playerID == 2) && (boardSize + coor.first + i < 11) && (boardSize + coor.second + i < 11) && (markerPlayer1[boardSize + coor.first + i][boardSize + coor.second + i] == 1)); --i)
+        for (i = -1; ((playerID == 1) && (boardSize + coor.first + i > 0 ) && (boardSize + coor.second + i > 0 ) && (markerPlayer2[boardSize + coor.first + i][boardSize + coor.second + i] == 1)) || ((playerID == 2) && (boardSize + coor.first + i > 0 ) && (boardSize + coor.second + i > 0 ) && (markerPlayer1[boardSize + coor.first + i][boardSize + coor.second + i] == 1)); --i)
             ;
         start = i + 1;
 
