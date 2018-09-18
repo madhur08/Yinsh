@@ -26,7 +26,7 @@ State::move::move(int dir)
     direction = dir;
     index = -1;
     finalPos = std::pair<int,int>(0,-1);
-    startPos = std::pair<int,int>(0,0);
+    startPos = std::pair<int,int>(0,-1);
 }
 State::State(const State &state) : move0(-1)
 {
@@ -62,7 +62,7 @@ State::State(int playerID, int boardSize) : move0(-1)
 }
 State::State(int playerID, int boardSize, std::string move) : move0(-1)
 {
-    this->playerID = playerID;
+    this->playerID = 3 - playerID;
     this->boardSize = boardSize;
     score1 = score2 = numMarkers2 = numMarkers1 = reachability1 = reachability2 = 0;
     lastRowMove = currentMove = 0;
@@ -147,6 +147,7 @@ void State::playMove(std::string str)
     std::string item;
     reachability1 = 0;
     reachability2 = 0;
+    std::cerr<<"input = "<<str<<std::endl;
     while (ss >> item)
     {
         if (item == "S")
@@ -250,7 +251,7 @@ void State::playMove(std::string str)
             removeRowAndRing(row);
         }
         else
-            std::cerr << "Incorrect Move\n";
+            std::cerr << "Incorrect Move "<<item<<std::endl;
     }
 }
 void State::initializeMatrix(vector<vector<bool> > &matrix, int size)
@@ -297,7 +298,7 @@ std::pair<int, int> State::moveToCoordinate(int ring, int position)
 std::pair<int, int> State::coordinateToMove(int x, int y)
 {
     std::pair<int, int> move;
-    if (x > 0 && y > 0)
+    if (x >= 0 && y >= 0)
     {
         if (x > y)
         {
@@ -310,12 +311,12 @@ std::pair<int, int> State::coordinateToMove(int x, int y)
             move.second = x + 5 * y;
         }
     }
-    else if (x < 0 && y > 0)
+    else if (x <= 0 && y >= 0)
     {
         move.first = y - x;
         move.second = 5 * y - 4 * x;
     }
-    else if (x > 0 && y < 0)
+    else if (x >= 0 && y <= 0)
     {
         move.first = x - y;
         move.second = x - 2 * y;
@@ -463,13 +464,14 @@ bool State::executeNext(State &nextState)
     if (ringPos1.size() < 5 || ringPos2.size() < 5)
     {
         if(move0.startPos.first <= boardSize){
-            for (int p = move0.startPos.second + 1; p < 6 * move0.startPos.first; ++p)
+            for (int p = move0.startPos.second + 1; p < 6 * move0.startPos.first || p==0; ++p)
             {
                 if (!(move0.startPos.first == boardSize) || !((p % boardSize) == 0))
                 {
                     std::pair<int, int> coor = moveToCoordinate(move0.startPos.first, p);
-                    if (ringPlayer1[boardSize + coor.first][boardSize + coor.second] == 0)
+                    if (ringPlayer1[boardSize + coor.first][boardSize + coor.second] == 0 && ringPlayer2[boardSize + coor.first][boardSize + coor.second] == 0)
                     {
+                        //std::cerr<<"ring = "<<move0.startPos.first<<" pos = "<<p<<std::endl;
                         addRing(coor, nextState);
                         storeMove(nextState, AddRing, std::pair<int, int>(move0.startPos.first, p));
                         return true;;
@@ -484,8 +486,9 @@ bool State::executeNext(State &nextState)
                 if (!(r == boardSize) || !((p % boardSize) == 0))
                 {
                     std::pair<int, int> coor = moveToCoordinate(r, p);
-                    if (ringPlayer1[boardSize + coor.first][boardSize + coor.second] == 0)
+                    if (ringPlayer1[boardSize + coor.first][boardSize + coor.second] == 0  && ringPlayer2[boardSize + coor.first][boardSize + coor.second] == 0)
                     {
+                        //std::cerr<<"ring = "<<r<<" pos = "<<p<<std::endl<<std::endl;
                         addRing(coor, nextState);
                         storeMove(nextState, AddRing, std::pair<int, int>(r, p));
                         return true;
@@ -563,7 +566,10 @@ void State::addRing(std::pair<int, int> coor, State &nextState)
         nextState.ringPlayer1[boardSize + coor.first][boardSize + coor.second] = 1;
         nextState.playerID = 1;
     }
+    //std::cerr<<"x = "<<coor.first<<" y = "<<coor.second<<std::endl;
+    
     move0 = move(coordinateToMove(coor.first, coor.second), std::pair<int, int>(0, 0));
+    //std::cerr<<"ring = "<<move0.startPos.first<<" pos = "<<move0.startPos.second<<std::endl<<std::endl;
 }
 void State::moveRing(move pos, State &nextState)
 {

@@ -12,7 +12,7 @@ Search::Search(int boardSize, int timeLimit, std::string move)
     w5=1;
     w6=1;
     w7=1;
-    w8=1;
+    w8=-1;
 }
 Search::Search(int boardSize, int timeLimit)
     : state(1, boardSize)
@@ -25,7 +25,7 @@ Search::Search(int boardSize, int timeLimit)
     w5=1;
     w6=1;
     w7=1;
-    w8=1;
+    w8=-1;
 }
 void Search::playMove(std::string str){
     state.playMove(str);
@@ -135,7 +135,7 @@ double Search::evalFunction(State& current)
         else
         {
             
-            return w3*(current.getScore1()-current.getScore2()) + w4*(current.getMarkers1()-current.getMarkers2())  + w6*(current.sumMarkersInControl1()-current.sumMarkersInControl2()) + w8*0.004*( sumDistFromCenter(1,current)-sumDistFromCenter(2,current) );  // + w5*(current.validMoves1()-current.validMoves2()) + w7*(current.allMoves1()-current.allMoves2())
+            return w3*(current.getScore1()-current.getScore2()) + w4*(current.getMarkers1()-current.getMarkers2())  + w6*(current.sumMarkersInControl1()-current.sumMarkersInControl2()) + w8*0.004*( sumDistFromCenter(1,current)-0*sumDistFromCenter(2,current) );  // + w5*(current.validMoves1()-current.validMoves2()) + w7*(current.allMoves1()-current.allMoves2())
         }
     }
     else                //our player is 2 
@@ -153,12 +153,12 @@ double Search::evalFunction(State& current)
         else
         {
             
-            return -1*( w3*(current.getScore1()-current.getScore2()) + w4*(current.getMarkers1()-current.getMarkers2())  + w6*(current.sumMarkersInControl1()-current.sumMarkersInControl2()) + w8*0.004*( sumDistFromCenter(1,current)-sumDistFromCenter(2,current) ) ); // + w5*(current.validMoves1()-current.validMoves2())+ w7*(current.allMoves1()-current.allMoves2()) );
+            return -1*( w3*(current.getScore1()-current.getScore2()) + w4*(current.getMarkers1()-current.getMarkers2())  + w6*(current.sumMarkersInControl1()-current.sumMarkersInControl2()) + w8*0.004*( 0*sumDistFromCenter(1,current)-sumDistFromCenter(2,current) ) ); // + w5*(current.validMoves1()-current.validMoves2())+ w7*(current.allMoves1()-current.allMoves2()) );
         }
     }
 }
 
-double  sumDistFromCenter (int player, State& current)
+double  Search::sumDistFromCenter (int player, State& current)
 {
     if (player == 1)
     {
