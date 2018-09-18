@@ -28,6 +28,13 @@ State::move::move(int dir)
     finalPos = std::pair<int, int>(0, -1);
     startPos = std::pair<int, int>(0, -1);
 }
+State::move::move()
+{
+    direction = -1;
+    index = -1;
+    finalPos = std::pair<int, int>(0, -1);
+    startPos = std::pair<int, int>(0, -1);
+}
 State::State(const State &state) : move0(-1)
 {
     playerID = state.playerID;
@@ -42,7 +49,7 @@ State::State(const State &state) : move0(-1)
     ringPlayer2 = state.ringPlayer2;
     ringPos1 = state.ringPos1;
     ringPos2 = state.ringPos2;
-    possibleMoves.resize(0);
+    possibleRows.resize(0);
     possibleRowMoves.resize(0);
     possibleRowMovesBeforeMove.resize(0);
     moves.resize(0);
@@ -60,7 +67,7 @@ State::State(int playerID, int boardSize) : move0(-1)
     initializeMatrix(markerPlayer2, boardSize);
     initializeMatrix(ringPlayer1, boardSize);
     initializeMatrix(ringPlayer2, boardSize);
-    possibleMoves.resize(0);
+    possibleRows.resize(0);
     possibleRowMoves.resize(0);
     possibleRowMovesBeforeMove.resize(0);
     moves.resize(0);
@@ -78,7 +85,7 @@ State::State(int playerID, int boardSize, std::string move) : move0(-1)
     initializeMatrix(markerPlayer2, boardSize);
     initializeMatrix(ringPlayer1, boardSize);
     initializeMatrix(ringPlayer2, boardSize);
-    possibleMoves.resize(0);
+    possibleRows.resize(0);
     possibleRowMoves.resize(0);
     possibleRowMovesBeforeMove.resize(0);
     moves.resize(0);

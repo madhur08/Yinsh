@@ -27,6 +27,7 @@ private:
     move(int, std::pair<int, int>, std::pair<int, int>);
     move(std::pair<int, int>, std::pair<int, int>);
     move(int);
+    move();
   };
   int playerID, boardSize;
   int numMarkers1, numMarkers2;
