@@ -25,8 +25,8 @@ State::move::move(int dir)
 {
     direction = dir;
     index = -1;
-    finalPos = std::pair<int,int>(0,-1);
-    startPos = std::pair<int,int>(0,-1);
+    finalPos = std::pair<int, int>(0, -1);
+    startPos = std::pair<int, int>(0, -1);
 }
 State::State(const State &state) : move0(-1)
 {
@@ -42,6 +42,10 @@ State::State(const State &state) : move0(-1)
     ringPlayer2 = state.ringPlayer2;
     ringPos1 = state.ringPos1;
     ringPos2 = state.ringPos2;
+    possibleMoves.resize(0);
+    possibleRowMoves.resize(0);
+    possibleRowMovesBeforeMove.resize(0);
+    moves.resize(0);
     removeBeforeMove = 0;
     lastRowMoveBeforeMove = 0;
     lastRowMove = currentMove = reachability1 = reachability2 = 0;
@@ -56,6 +60,10 @@ State::State(int playerID, int boardSize) : move0(-1)
     initializeMatrix(markerPlayer2, boardSize);
     initializeMatrix(ringPlayer1, boardSize);
     initializeMatrix(ringPlayer2, boardSize);
+    possibleMoves.resize(0);
+    possibleRowMoves.resize(0);
+    possibleRowMovesBeforeMove.resize(0);
+    moves.resize(0);
     removeBeforeMove = 0;
     lastRowMoveBeforeMove = 0;
     playMove(std::string("P 0 0\n"));
@@ -70,6 +78,10 @@ State::State(int playerID, int boardSize, std::string move) : move0(-1)
     initializeMatrix(markerPlayer2, boardSize);
     initializeMatrix(ringPlayer1, boardSize);
     initializeMatrix(ringPlayer2, boardSize);
+    possibleMoves.resize(0);
+    possibleRowMoves.resize(0);
+    possibleRowMovesBeforeMove.resize(0);
+    moves.resize(0);
     removeBeforeMove = 0;
     lastRowMoveBeforeMove = 0;
     playMove(move);
@@ -96,21 +108,25 @@ int State::getMarkers2()
 {
     return numMarkers2;
 }
-int State::numRings1(){
+int State::numRings1()
+{
     return ringPos1.size();
 }
-int State::numRings2(){
+int State::numRings2()
+{
     return ringPos2.size();
 }
-std::pair<int,int> State::getRing1(int i){
-    return coordinateToMove(ringPos1[i].first,ringPos1[i].second);
+std::pair<int, int> State::getRing1(int i)
+{
+    return coordinateToMove(ringPos1[i].first, ringPos1[i].second);
 }
-std::pair<int,int> State::getRing2(int i){
-    return coordinateToMove(ringPos2[i].first,ringPos2[i].second);
+std::pair<int, int> State::getRing2(int i)
+{
+    return coordinateToMove(ringPos2[i].first, ringPos2[i].second);
 }
 int State::sumMarkersInControl1()
 {
-    if(ringPos1.size()<5 || ringPos2.size()<5)
+    if (ringPos1.size() < 5 || ringPos2.size() < 5)
         return 0;
     if (reachability1 != 0)
         return reachability1;
@@ -126,7 +142,7 @@ int State::sumMarkersInControl1()
 }
 int State::sumMarkersInControl2()
 {
-    if(ringPos1.size()<5 || ringPos2.size()<5)
+    if (ringPos1.size() < 5 || ringPos2.size() < 5)
         return 0;
     if (reachability2 != 0)
         return reachability2;
@@ -147,7 +163,7 @@ void State::playMove(std::string str)
     std::string item;
     reachability1 = 0;
     reachability2 = 0;
-    std::cerr<<"input = "<<str<<std::endl;
+    std::cerr << "input = " << str << std::endl;
     while (ss >> item)
     {
         if (item == "S")
@@ -251,10 +267,10 @@ void State::playMove(std::string str)
             removeRowAndRing(row);
         }
         else
-            std::cerr << "Incorrect Move "<<item<<std::endl;
+            std::cerr << "Incorrect Move " << item << std::endl;
     }
 }
-void State::initializeMatrix(vector<vector<bool> > &matrix, int size)
+void State::initializeMatrix(vector<vector<bool>> &matrix, int size)
 {
     matrix.resize(2 * size + 1);
     for (auto &v : matrix)
@@ -264,7 +280,7 @@ void State::initializeMatrix(vector<vector<bool> > &matrix, int size)
 std::pair<int, int> State::moveToCoordinate(int ring, int position)
 {
     std::pair<int, int> coordinate(ring, ring);
-    if(ring == 0 && position ==0)
+    if (ring == 0 && position == 0)
         return coordinate;
     switch (int(position / ring))
     {
@@ -389,7 +405,7 @@ int State::addPossibleMovesDir(int x, int y, int max, int dir, int index, bool p
                 break;
             }
         }
-        if(pushMove)
+        if (pushMove)
             moves.push_back(move(index, std::pair<int, int>(x, y), std::pair<int, int>(x + p * s * a, y + p * s * b)));
         moveCount++;
     }
@@ -441,7 +457,8 @@ void State::storeMove(State &nextState, moveType type, std::pair<int, int> coord
         nextState.appendToCurrentMove("X " + std::to_string(coord1.first) + ' ' + std::to_string(coord1.second) + ' ');
     }
 }
-void State::removeAndStore(const std::pair<move,move> &a){
+void State::removeAndStore(const std::pair<move, move> &a)
+{
     removeRowAndRing(a.first);
     storeMove(*this, RemoveRow, coordinateToMove(a.first.startPos.first, a.first.startPos.second), coordinateToMove(a.first.finalPos.first, a.first.finalPos.second));
     if (playerID == 1)
@@ -463,8 +480,9 @@ bool State::executeNext(State &nextState)
     bool moveExecuted = false;
     if (ringPos1.size() < 5 || ringPos2.size() < 5)
     {
-        if(move0.startPos.first <= boardSize){
-            for (int p = move0.startPos.second + 1; p < 6 * move0.startPos.first || p==0; ++p)
+        if (move0.startPos.first <= boardSize)
+        {
+            for (int p = move0.startPos.second + 1; p < 6 * move0.startPos.first || p == 0; ++p)
             {
                 if (!(move0.startPos.first == boardSize) || !((p % boardSize) == 0))
                 {
@@ -474,7 +492,8 @@ bool State::executeNext(State &nextState)
                         //std::cerr<<"ring = "<<move0.startPos.first<<" pos = "<<p<<std::endl;
                         addRing(coor, nextState);
                         storeMove(nextState, AddRing, std::pair<int, int>(move0.startPos.first, p));
-                        return true;;
+                        return true;
+                        ;
                     }
                 }
             }
@@ -486,7 +505,7 @@ bool State::executeNext(State &nextState)
                 if (!(r == boardSize) || !((p % boardSize) == 0))
                 {
                     std::pair<int, int> coor = moveToCoordinate(r, p);
-                    if (ringPlayer1[boardSize + coor.first][boardSize + coor.second] == 0  && ringPlayer2[boardSize + coor.first][boardSize + coor.second] == 0)
+                    if (ringPlayer1[boardSize + coor.first][boardSize + coor.second] == 0 && ringPlayer2[boardSize + coor.first][boardSize + coor.second] == 0)
                     {
                         //std::cerr<<"ring = "<<r<<" pos = "<<p<<std::endl<<std::endl;
                         addRing(coor, nextState);
@@ -497,11 +516,12 @@ bool State::executeNext(State &nextState)
             }
         }
     }
-    else if (lastRowMove != possibleRowMoves.size() - 1)
+    else if (lastRowMove < (possibleRowMoves.size() - 1))
     {
-        if(removeBeforeMove){
-            nextState.removeAndStore(possibleRowMovesBeforeMove[lastRowMoveBeforeMove-1]);
-            if((score1 == 3&&playerID ==2)||(score2 == 3&&playerID ==1))
+        if (removeBeforeMove)
+        {
+            nextState.removeAndStore(possibleRowMovesBeforeMove[lastRowMoveBeforeMove - 1]);
+            if ((score1 == 3 && playerID == 2) || (score2 == 3 && playerID == 1))
                 return true;
         }
         storeMove(nextState, MoveRing, coordinateToMove(move0.startPos.first, move0.startPos.second), coordinateToMove(move0.finalPos.first, move0.finalPos.second));
@@ -515,11 +535,14 @@ bool State::executeNext(State &nextState)
         lastRowMove = 0;
         possibleRows.clear();
         possibleRowMoves.clear();
-        if(removeBeforeMove){
-            if(currentMove == moves.size()){
-                if(lastRowMoveBeforeMove != possibleRowMovesBeforeMove.size()){
+        if (removeBeforeMove)
+        {
+            if (currentMove == moves.size())
+            {
+                if (lastRowMoveBeforeMove < possibleRowMovesBeforeMove.size())
+                {
                     nextState.removeAndStore(possibleRowMovesBeforeMove[lastRowMoveBeforeMove]);
-                    if((score1 == 3&&playerID ==2)||(score2 == 3&&playerID ==1))
+                    if ((score1 == 3 && playerID == 2) || (score2 == 3 && playerID == 1))
                         return true;
                     moves.clear();
                     currentMove = 0;
@@ -527,9 +550,10 @@ bool State::executeNext(State &nextState)
                     ++lastRowMoveBeforeMove;
                 }
             }
-            else{
-                nextState.removeAndStore(possibleRowMovesBeforeMove[lastRowMoveBeforeMove-1]);
-                if((score1 == 3&&playerID ==2)||(score2 == 3&&playerID ==1))
+            else
+            {
+                nextState.removeAndStore(possibleRowMovesBeforeMove[lastRowMoveBeforeMove - 1]);
+                if ((score1 == 3 && playerID == 2) || (score2 == 3 && playerID == 1))
                     return true;
             }
         }
@@ -567,7 +591,7 @@ void State::addRing(std::pair<int, int> coor, State &nextState)
         nextState.playerID = 1;
     }
     //std::cerr<<"x = "<<coor.first<<" y = "<<coor.second<<std::endl;
-    
+
     move0 = move(coordinateToMove(coor.first, coor.second), std::pair<int, int>(0, 0));
     //std::cerr<<"ring = "<<move0.startPos.first<<" pos = "<<move0.startPos.second<<std::endl<<std::endl;
 }
@@ -686,7 +710,7 @@ void State::removeRowAndRing(const move &a)
         ++score2;
     }
 }
-void State::makeAllPossibleCombinations(vector<std::pair<move,move> > &rowMoves)
+void State::makeAllPossibleCombinations(vector<std::pair<move, move>> &rowMoves)
 {
     if ((playerID == 1 && ringPos2.size() == 3) || (playerID == 2 && ringPos1.size() == 3))
     {
@@ -805,7 +829,7 @@ void State::makeRows(State &nextState, vector<std::pair<int, int>> flipped, std:
     }
     else if (start.second == end.second)
     {
-        for(size_t f = 0; f != flipped.size(); ++f)
+        for (size_t f = 0; f != flipped.size(); ++f)
         {
             if (f > 0 && std::abs(flipped[f - 1].first - flipped[f].first) > 1 && !once)
                 check = true;
