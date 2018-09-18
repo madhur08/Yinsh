@@ -28,47 +28,54 @@ private:
     move(std::pair<int, int>, std::pair<int, int>);
     move(int);
   };
-  unsigned int playerID, boardSize;
-
-  unsigned int numMarkers1, numMarkers2;
-  unsigned int score1, score2;
+  int playerID, boardSize;
+  int numMarkers1, numMarkers2;
+  int score1, score2;
   vector<vector<bool> > markerPlayer1;
   vector<vector<bool> > markerPlayer2;
   vector<vector<bool> > ringPlayer1;
   vector<vector<bool> > ringPlayer2;
-  unsigned int reachability1, reachability2;
+  int reachability1, reachability2;
   vector<std::pair<int, int> > ringPos1;
   vector<std::pair<int, int> > ringPos2;
 
   vector<move> moves;
   vector<move> possibleRows;
   vector<std::pair<move, move> > possibleRowMoves;
-  unsigned int lastRowMove;
-  std::string playedMove;
-  unsigned int currentMove;
+  vector<std::pair<move, move> > possibleRowMovesBeforeMove;
+  size_t lastRowMove;
+  size_t currentMove;
+  size_t lastRowMoveBeforeMove;
+  bool removeBeforeMove;
   move move0;
+  std::string playedMove;
 
   void appendToCurrentMove(std::string);
-  void initializeMatrix(vector< vector<bool> > &, int);
+  void initializeMatrix(vector<vector<bool> > &, int);
   std::pair<int, int> moveToCoordinate(int, int);
   std::pair<int, int> coordinateToMove(int, int);
-  int possibleMoves();
-  int addPossibleMoves(std::pair<int, int>, int);
+  int possibleMoves(bool pushMove = 1);
+  int addPossibleMoves(std::pair<int, int>, int, bool pushMove);
   std::pair<int, int> maxIncrement(std::pair<int, int>, int);
-  int addPossibleMovesDir(int, int, int, int, int);
+  int addPossibleMovesDir(int, int, int, int, int, bool pushMove);
   void addRing(std::pair<int, int>, State &);
   void moveRing(move, State &);
   vector<std::pair<int, int> > flipMarkers(std::pair<int, int>, std::pair<int, int>, State &);
   void storeMove(State &, moveType, std::pair<int, int>, std::pair<int, int>);
   bool flip(int, int);
   vector<move> checkRow(std::pair<int, int>, int);
-  void makeAllPossibleCombinations();
+  void makeAllPossibleCombinations(vector<std::pair<move,move> > &);
   void removeRowAndRing(const move &);
+  void removeAndStore(const std::pair<move,move> &);
   void makeRows(State &, vector<std::pair<int, int>>, std::pair<int, int>, std::pair<int, int>);
   bool checkIntersection(const move&, const move&);
 
 public:
   std::string getMove();
+  std::pair<int,int> getRing1(int);
+  std::pair<int,int> getRing2(int);
+  int numRings1();
+  int numRings2();
   int getScore1();
   int getScore2();
   int getMarkers1();

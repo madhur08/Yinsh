@@ -8,9 +8,11 @@ Search::Search(int boardSize, int timeLimit, std::string move)
     w1=1;
     w2=1;
     w3=1000;
-    w4=1;
+    w4=10;
     w5=1;
     w6=1;
+    w7=1;
+    w8=1;
 }
 Search::Search(int boardSize, int timeLimit)
     : state(1, boardSize)
@@ -19,9 +21,11 @@ Search::Search(int boardSize, int timeLimit)
     w1=1;
     w2=1;
     w3=1000;
-    w4=1;
+    w4=10;
     w5=1;
     w6=1;
+    w7=1;
+    w8=1;
 }
 void Search::playMove(std::string str){
     state.playMove(str);
@@ -131,7 +135,7 @@ double Search::evalFunction(State& current)
         else
         {
             
-            return w3*(current.getScore1()-current.getScore2()) + w4*(current.getMarkers1()-current.getMarkers2())  + w6*(current.sumMarkersInControl1()-current.sumMarkersInControl2()) ;  // + w5*(current.validMoves1()-current.validMoves2()) + w7*(current.allMoves1()-current.allMoves2())
+            return w3*(current.getScore1()-current.getScore2()) + w4*(current.getMarkers1()-current.getMarkers2())  + w6*(current.sumMarkersInControl1()-current.sumMarkersInControl2()) + w8*0.004*( sumDistFromCenter(1,current)-sumDistFromCenter(2,current) );  // + w5*(current.validMoves1()-current.validMoves2()) + w7*(current.allMoves1()-current.allMoves2())
         }
     }
     else                //our player is 2 
@@ -149,7 +153,33 @@ double Search::evalFunction(State& current)
         else
         {
             
-            return -1*( w3*(current.getScore1()-current.getScore2()) + w4*(current.getMarkers1()-current.getMarkers2())  + w6*(current.sumMarkersInControl1()-current.sumMarkersInControl2()) ); // + w5*(current.validMoves1()-current.validMoves2())+ w7*(current.allMoves1()-current.allMoves2()) );
+            return -1*( w3*(current.getScore1()-current.getScore2()) + w4*(current.getMarkers1()-current.getMarkers2())  + w6*(current.sumMarkersInControl1()-current.sumMarkersInControl2()) + w8*0.004*( sumDistFromCenter(1,current)-sumDistFromCenter(2,current) ) ); // + w5*(current.validMoves1()-current.validMoves2())+ w7*(current.allMoves1()-current.allMoves2()) );
         }
+    }
+}
+
+double  sumDistFromCenter (int player, State& current)
+{
+    if (player == 1)
+    {
+        int n = current.numRings1();
+        double distance=0;
+        for (int i = 0; i < n; ++i)
+        {
+            std::pair<int,int> am = current.getRing1(i);
+            distance += am.first; 
+        }
+        return distance;
+    }
+    else
+    {
+        int n = current.numRings2();
+        double distance=0;
+        for (int i = 0; i < n; ++i)
+        {
+            std::pair<int,int> am = current.getRing2(i);
+            distance += am.first; 
+        }
+        return distance;
     }
 }

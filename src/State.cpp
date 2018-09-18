@@ -11,16 +11,22 @@ State::move::move(int ind, std::pair<int, int> pos1, std::pair<int, int> pos2)
 {
     startPos = pos1;
     finalPos = pos2;
+    direction = -1;
     index = ind;
 }
 State::move::move(std::pair<int, int> pos1, std::pair<int, int> pos2)
 {
     startPos = pos1;
     finalPos = pos2;
+    index = -1;
+    direction = -1;
 }
 State::move::move(int dir)
 {
     direction = dir;
+    index = -1;
+    finalPos = std::pair<int,int>(0,-1);
+    startPos = std::pair<int,int>(0,0);
 }
 State::State(const State &state) : move0(-1)
 {
@@ -36,25 +42,36 @@ State::State(const State &state) : move0(-1)
     ringPlayer2 = state.ringPlayer2;
     ringPos1 = state.ringPos1;
     ringPos2 = state.ringPos2;
+    removeBeforeMove = 0;
+    lastRowMoveBeforeMove = 0;
+    lastRowMove = currentMove = reachability1 = reachability2 = 0;
 }
 State::State(int playerID, int boardSize) : move0(-1)
 {
     this->playerID = 3 - playerID;
     this->boardSize = boardSize;
+    score1 = score2 = numMarkers2 = numMarkers1 = reachability1 = reachability2 = 0;
+    lastRowMove = currentMove = 0;
     initializeMatrix(markerPlayer1, boardSize);
     initializeMatrix(markerPlayer2, boardSize);
     initializeMatrix(ringPlayer1, boardSize);
     initializeMatrix(ringPlayer2, boardSize);
+    removeBeforeMove = 0;
+    lastRowMoveBeforeMove = 0;
     playMove(std::string("P 0 0\n"));
 }
 State::State(int playerID, int boardSize, std::string move) : move0(-1)
 {
     this->playerID = playerID;
     this->boardSize = boardSize;
+    score1 = score2 = numMarkers2 = numMarkers1 = reachability1 = reachability2 = 0;
+    lastRowMove = currentMove = 0;
     initializeMatrix(markerPlayer1, boardSize);
     initializeMatrix(markerPlayer2, boardSize);
     initializeMatrix(ringPlayer1, boardSize);
     initializeMatrix(ringPlayer2, boardSize);
+    removeBeforeMove = 0;
+    lastRowMoveBeforeMove = 0;
     playMove(move);
 }
 std::string State::getMove()
@@ -79,14 +96,28 @@ int State::getMarkers2()
 {
     return numMarkers2;
 }
+int State::numRings1(){
+    return ringPos1.size();
+}
+int State::numRings2(){
+    return ringPos2.size();
+}
+std::pair<int,int> State::getRing1(int i){
+    return coordinateToMove(ringPos1[i].first,ringPos1[i].second);
+}
+std::pair<int,int> State::getRing2(int i){
+    return coordinateToMove(ringPos2[i].first,ringPos2[i].second);
+}
 int State::sumMarkersInControl1()
 {
+    if(ringPos1.size()<5 || ringPos2.size()<5)
+        return 0;
     if (reachability1 != 0)
         return reachability1;
     if (playerID == 1)
     {
         playerID = 3 - playerID;
-        possibleMoves();
+        possibleMoves(0);
         playerID = 3 - playerID;
         return reachability1;
     }
@@ -95,12 +126,14 @@ int State::sumMarkersInControl1()
 }
 int State::sumMarkersInControl2()
 {
+    if(ringPos1.size()<5 || ringPos2.size()<5)
+        return 0;
     if (reachability2 != 0)
         return reachability2;
     if (playerID == 2)
     {
         playerID = 3 - playerID;
-        possibleMoves();
+        possibleMoves(0);
         playerID = 3 - playerID;
         return reachability1;
     }
@@ -134,7 +167,7 @@ void State::playMove(std::string str)
             int index = 0;
             if (playerID == 1)
             {
-                for (unsigned int i = 0; i < ringPos2.size(); ++i)
+                for (size_t i = 0; i != ringPos2.size(); ++i)
                     if (ringPos2[i] == coor1)
                     {
                         index = i;
@@ -143,7 +176,7 @@ void State::playMove(std::string str)
             }
             else
             {
-                for (unsigned int i = 0; i < ringPos1.size(); ++i)
+                for (size_t i = 0; i < ringPos1.size(); ++i)
                     if (ringPos1[i] == coor1)
                     {
                         index = i;
@@ -158,7 +191,9 @@ void State::playMove(std::string str)
             makeRows(*this, flipMarkers(coor1, coor2, *this), coor1, coor2);
             if (possibleRows.empty())
                 return;
-            makeAllPossibleCombinations();
+            removeBeforeMove = true;
+            lastRowMoveBeforeMove = 0;
+            makeAllPossibleCombinations(possibleRowMovesBeforeMove);
         }
         else if (item == "P")
         {
@@ -195,7 +230,7 @@ void State::playMove(std::string str)
             int index = 0;
             if (playerID == 1)
             {
-                for (unsigned int i = 0; i < ringPos2.size(); ++i)
+                for (size_t i = 0; i != ringPos2.size(); ++i)
                     if (ringPos2[i] == coor1)
                     {
                         index = i;
@@ -204,7 +239,7 @@ void State::playMove(std::string str)
             }
             else
             {
-                for (unsigned int i = 0; i < ringPos1.size(); ++i)
+                for (size_t i = 0; i != ringPos1.size(); ++i)
                     if (ringPos1[i] == coor1)
                     {
                         index = i;
@@ -218,7 +253,7 @@ void State::playMove(std::string str)
             std::cerr << "Incorrect Move\n";
     }
 }
-void State::initializeMatrix(std::vector<std::vector<bool>> &matrix, int size)
+void State::initializeMatrix(vector<vector<bool> > &matrix, int size)
 {
     matrix.resize(2 * size + 1);
     for (auto &v : matrix)
@@ -228,6 +263,8 @@ void State::initializeMatrix(std::vector<std::vector<bool>> &matrix, int size)
 std::pair<int, int> State::moveToCoordinate(int ring, int position)
 {
     std::pair<int, int> coordinate(ring, ring);
+    if(ring == 0 && position ==0)
+        return coordinate;
     switch (int(position / ring))
     {
     case 5:
@@ -298,32 +335,32 @@ std::pair<int, int> State::coordinateToMove(int x, int y)
     }
     return move;
 }
-int State::possibleMoves()
+int State::possibleMoves(bool pushMove)
 {
     int movesNum = 0;
     if (ringPos1.size() < 5 || ringPos2.size() < 5)
         movesNum = ((6 + boardSize * 6) * boardSize * 0.5 - 5 - ringPos1.size() - ringPos2.size());
-    if (playerID == 2)
-        for (int i = 0; i < 5; ++i)
-            movesNum += addPossibleMoves(ringPos1[i], i);
-    if (playerID == 1)
-        for (int i = 0; i < 5; ++i)
-            movesNum += addPossibleMoves(ringPos2[i], i);
+    else if (playerID == 2)
+        for (size_t i = 0; i != ringPos1.size(); ++i)
+            movesNum += addPossibleMoves(ringPos1[i], i, pushMove);
+    else if (playerID == 1)
+        for (size_t i = 0; i != ringPos2.size(); ++i)
+            movesNum += addPossibleMoves(ringPos2[i], i, pushMove);
     return movesNum;
 }
-int State::addPossibleMoves(std::pair<int, int> position, int index)
+int State::addPossibleMoves(std::pair<int, int> position, int index, bool pushMove = 1)
 {
     int x = position.first, y = position.second;
     int moveCount = 0;
     for (int i = 1; i <= 3; ++i)
     {
         std::pair<int, int> maxInc = maxIncrement(position, i);
-        moveCount += addPossibleMovesDir(x, y, maxInc.first, i, index);
-        moveCount += addPossibleMovesDir(x, y, maxInc.second, i, index);
+        moveCount += addPossibleMovesDir(x, y, maxInc.first, i, index, pushMove);
+        moveCount += addPossibleMovesDir(x, y, maxInc.second, i, index, pushMove);
     }
     return moveCount;
 }
-int State::addPossibleMovesDir(int x, int y, int max, int dir, int index)
+int State::addPossibleMovesDir(int x, int y, int max, int dir, int index, bool pushMove = 1)
 {
     int s = max < 0 ? -1 : 1;
     max = max < 0 ? -max : max;
@@ -344,14 +381,15 @@ int State::addPossibleMovesDir(int x, int y, int max, int dir, int index)
                 else
                     reachability1++;
             }
-            if (p <= max)
+            if (p <= max && pushMove)
             {
                 moves.push_back(move(index, std::pair<int, int>(x, y), std::pair<int, int>(x + p * s * a, y + p * s * b)));
                 moveCount++;
                 break;
             }
         }
-        moves.push_back(move(index, std::pair<int, int>(x, y), std::pair<int, int>(x + p * s * a, y + p * s * b)));
+        if(pushMove)
+            moves.push_back(move(index, std::pair<int, int>(x, y), std::pair<int, int>(x + p * s * a, y + p * s * b)));
         moveCount++;
     }
     return moveCount;
@@ -402,214 +440,108 @@ void State::storeMove(State &nextState, moveType type, std::pair<int, int> coord
         nextState.appendToCurrentMove("X " + std::to_string(coord1.first) + ' ' + std::to_string(coord1.second) + ' ');
     }
 }
-
+void State::removeAndStore(const std::pair<move,move> &a){
+    removeRowAndRing(a.first);
+    storeMove(*this, RemoveRow, coordinateToMove(a.first.startPos.first, a.first.startPos.second), coordinateToMove(a.first.finalPos.first, a.first.finalPos.second));
+    if (playerID == 1)
+        storeMove(*this, RemoveRing, coordinateToMove(ringPos2[a.first.index].first, ringPos2[a.first.index].second));
+    else
+        storeMove(*this, RemoveRing, coordinateToMove(ringPos1[a.first.index].first, ringPos1[a.first.index].second));
+    if (a.second.direction > 0)
+    {
+        removeRowAndRing(a.second);
+        storeMove(*this, RemoveRow, coordinateToMove(a.second.startPos.first, a.second.startPos.second), coordinateToMove(a.second.finalPos.first, a.second.finalPos.second));
+        if (playerID == 1)
+            storeMove(*this, RemoveRing, coordinateToMove(ringPos2[a.second.index].first, ringPos2[a.second.index].second));
+        else
+            storeMove(*this, RemoveRing, coordinateToMove(ringPos1[a.second.index].first, ringPos1[a.second.index].second));
+    }
+}
 bool State::executeNext(State &nextState)
 {
     bool moveExecuted = false;
     if (ringPos1.size() < 5 || ringPos2.size() < 5)
     {
-        for (int p = move0.startPos.second + 1; p < 6 * move0.startPos.first; ++p)
-        {
-            if (!((unsigned int)move0.startPos.first == boardSize) || !(p % boardSize == 0))
+        if(move0.startPos.first <= boardSize){
+            for (int p = move0.startPos.second + 1; p < 6 * move0.startPos.first; ++p)
             {
-                std::pair<int, int> coor = moveToCoordinate(move0.startPos.first, p);
-                if (ringPlayer1[boardSize + coor.first][boardSize + coor.second] == 0)
+                if (!(move0.startPos.first == boardSize) || !((p % boardSize) == 0))
                 {
-                    moveExecuted = true;
-                    addRing(coor, nextState);
-                    storeMove(nextState, AddRing, std::pair<int, int>(move0.startPos.first, p));
+                    std::pair<int, int> coor = moveToCoordinate(move0.startPos.first, p);
+                    if (ringPlayer1[boardSize + coor.first][boardSize + coor.second] == 0)
+                    {
+                        addRing(coor, nextState);
+                        storeMove(nextState, AddRing, std::pair<int, int>(move0.startPos.first, p));
+                        return true;;
+                    }
                 }
             }
         }
-        for (unsigned int r = move0.startPos.first + 1; r <= boardSize; ++r)
+        for (int r = move0.startPos.first + 1; r <= boardSize; ++r)
         {
-            for (unsigned int p = 0; p < r * 6; ++p)
+            for (int p = 0; p < r * 6; ++p)
             {
-                if (!(r == boardSize) || !(p % boardSize == 0))
+                if (!(r == boardSize) || !((p % boardSize) == 0))
                 {
                     std::pair<int, int> coor = moveToCoordinate(r, p);
                     if (ringPlayer1[boardSize + coor.first][boardSize + coor.second] == 0)
                     {
-                        moveExecuted = true;
                         addRing(coor, nextState);
                         storeMove(nextState, AddRing, std::pair<int, int>(r, p));
+                        return true;
                     }
                 }
             }
         }
     }
-    else if (lastRowMove < possibleRowMoves.size() - 1 && (moves.size() == 0 || currentMove == moves.size()))
+    else if (lastRowMove != possibleRowMoves.size() - 1)
     {
-        move a = possibleRowMoves[++lastRowMove].first;
-        move b = possibleRowMoves[lastRowMove].second;
-        nextState.removeRowAndRing(a);
-        storeMove(nextState, RemoveRow, coordinateToMove(a.startPos.first, a.startPos.second), coordinateToMove(a.finalPos.first, a.finalPos.second));
-        if (playerID == 1)
-            storeMove(nextState, RemoveRing, coordinateToMove(ringPos2[a.index].first, ringPos2[a.index].second));
-        else
-            storeMove(nextState, RemoveRing, coordinateToMove(ringPos1[a.index].first, ringPos1[a.index].second));
-        if (b.direction > 0)
-        {
-            nextState.removeRowAndRing(b);
-            storeMove(nextState, RemoveRow, coordinateToMove(b.startPos.first, b.startPos.second), coordinateToMove(b.finalPos.first, b.finalPos.second));
-            if (playerID == 1)
-                storeMove(nextState, RemoveRing, coordinateToMove(ringPos2[b.index].first, ringPos2[b.index].second));
-            else
-                storeMove(nextState, RemoveRing, coordinateToMove(ringPos1[b.index].first, ringPos1[b.index].second));
-        }
-        if ((playerID == 1 && score2 == 3) || (playerID == 2 && score1 == 3))
-            return true;
-        possibleMoves();
-        currentMove = 0;
-        if (currentMove != moves.size())
-        {
-            storeMove(nextState, MoveRing, coordinateToMove(moves[currentMove].startPos.first, moves[currentMove].startPos.second), coordinateToMove(moves[currentMove].finalPos.first, moves[currentMove].finalPos.second));
-            moveRing(moves[currentMove], nextState);
-            makeRows(nextState, flipMarkers(moves[currentMove].startPos, moves[currentMove].finalPos, nextState), moves[currentMove].startPos, moves[currentMove].finalPos);
-            if (possibleRows.empty())
+        if(removeBeforeMove){
+            nextState.removeAndStore(possibleRowMovesBeforeMove[lastRowMoveBeforeMove-1]);
+            if((score1 == 3&&playerID ==2)||(score2 == 3&&playerID ==1))
                 return true;
-            makeAllPossibleCombinations();
-            nextState.removeRowAndRing(possibleRowMoves[lastRowMove].first);
-            move m = possibleRowMoves[lastRowMove].first;
-            storeMove(nextState, RemoveRow, coordinateToMove(m.startPos.first, m.startPos.second), coordinateToMove(m.finalPos.first, m.finalPos.second));
-            if (playerID == 1)
-                storeMove(nextState, RemoveRing, coordinateToMove(ringPos2[m.index].first, ringPos2[m.index].second));
-            else
-                storeMove(nextState, RemoveRing, coordinateToMove(ringPos1[m.index].first, ringPos1[m.index].second));
-            if (possibleRowMoves[lastRowMove].second.direction > 0)
-            {
-                m = possibleRowMoves[lastRowMove].second;
-                nextState.removeRowAndRing(m);
-                storeMove(nextState, RemoveRow, coordinateToMove(m.startPos.first, m.startPos.second), coordinateToMove(m.finalPos.first, m.finalPos.second));
-                if (playerID == 1)
-                    storeMove(nextState, RemoveRing, coordinateToMove(ringPos2[m.index].first, ringPos2[m.index].second));
-                else
-                    storeMove(nextState, RemoveRing, coordinateToMove(ringPos1[m.index].first, ringPos1[m.index].second));
-            }
-            currentMove++;
-            moveExecuted = true;
-            nextState.playerID = 3 - playerID;
         }
-    }
-    else if (lastRowMove < possibleRowMoves.size() - 1 && move0.startPos == std::pair<int, int>(0, 0) && move0.finalPos == std::pair<int, int>(0, 0) && currentMove < moves.size())
-    {
-        move a = possibleRowMoves[lastRowMove].first;
-        move b = possibleRowMoves[lastRowMove].second;
-        nextState.removeRowAndRing(a);
-        storeMove(nextState, RemoveRow, coordinateToMove(a.startPos.first, a.startPos.second), coordinateToMove(a.finalPos.first, a.finalPos.second));
-        if (playerID == 1)
-            storeMove(nextState, RemoveRing, coordinateToMove(ringPos2[a.index].first, ringPos2[a.index].second));
-        else
-            storeMove(nextState, RemoveRing, coordinateToMove(ringPos1[a.index].first, ringPos1[a.index].second));
-        if (b.direction > 0)
-        {
-            nextState.removeRowAndRing(b);
-            storeMove(nextState, RemoveRow, coordinateToMove(b.startPos.first, b.startPos.second), coordinateToMove(b.finalPos.first, b.finalPos.second));
-            if (playerID == 1)
-                storeMove(nextState, RemoveRing, coordinateToMove(ringPos2[b.index].first, ringPos2[b.index].second));
-            else
-                storeMove(nextState, RemoveRing, coordinateToMove(ringPos1[b.index].first, ringPos1[b.index].second));
-        }
-
-        storeMove(nextState, MoveRing, coordinateToMove(moves[currentMove].startPos.first, moves[currentMove].startPos.second), coordinateToMove(moves[currentMove].finalPos.first, moves[currentMove].finalPos.second));
-        moveRing(moves[currentMove], nextState);
-        makeRows(nextState, flipMarkers(moves[currentMove].startPos, moves[currentMove].finalPos, nextState), moves[currentMove].startPos, moves[currentMove].finalPos);
-        if (possibleRows.empty())
-            return true;
-        makeAllPossibleCombinations();
-        nextState.removeRowAndRing(possibleRowMoves[lastRowMove].first);
-        move m = possibleRowMoves[lastRowMove].first;
-        storeMove(nextState, RemoveRow, coordinateToMove(m.startPos.first, m.startPos.second), coordinateToMove(m.finalPos.first, m.finalPos.second));
-        if (playerID == 1)
-            storeMove(nextState, RemoveRing, coordinateToMove(ringPos2[m.index].first, ringPos2[m.index].second));
-        else
-            storeMove(nextState, RemoveRing, coordinateToMove(ringPos1[m.index].first, ringPos1[m.index].second));
-        if (possibleRowMoves[lastRowMove].second.direction > 0)
-        {
-            m = possibleRowMoves[lastRowMove].second;
-            nextState.removeRowAndRing(m);
-            storeMove(nextState, RemoveRow, coordinateToMove(m.startPos.first, m.startPos.second), coordinateToMove(m.finalPos.first, m.finalPos.second));
-            if (playerID == 1)
-                storeMove(nextState, RemoveRing, coordinateToMove(ringPos2[m.index].first, ringPos2[m.index].second));
-            else
-                storeMove(nextState, RemoveRing, coordinateToMove(ringPos1[m.index].first, ringPos1[m.index].second));
-        }
-        currentMove++;
-        moveExecuted = true;
+        storeMove(nextState, MoveRing, coordinateToMove(move0.startPos.first, move0.startPos.second), coordinateToMove(move0.finalPos.first, move0.finalPos.second));
+        moveRing(move0, nextState);
+        flipMarkers(move0.startPos, move0.finalPos, nextState);
+        nextState.removeAndStore(possibleRowMoves[++lastRowMove]);
         nextState.playerID = 3 - playerID;
-    }
-    else if (lastRowMove < possibleRowMoves.size() - 1)
-    {
-        if (playerID == 1)
-        {
-            nextState.ringPlayer2[boardSize + move0.startPos.first][boardSize + move0.startPos.second] = 0;
-            nextState.ringPlayer2[boardSize + move0.finalPos.first][boardSize + move0.finalPos.second] = 1;
-            nextState.markerPlayer2[boardSize + move0.startPos.first][boardSize + move0.startPos.second] = 1;
-            nextState.numMarkers2++;
-            nextState.ringPos2[move0.index] = move0.finalPos;
-            nextState.playerID = 2;
-            flipMarkers(move0.startPos, move0.finalPos, nextState);
-        }
-        else
-        {
-            nextState.ringPlayer1[boardSize + move0.startPos.first][boardSize + move0.startPos.second] = 0;
-            nextState.ringPlayer1[boardSize + move0.finalPos.first][boardSize + move0.finalPos.second] = 1;
-            nextState.markerPlayer1[boardSize + move0.startPos.first][boardSize + move0.startPos.second] = 1;
-            nextState.numMarkers1++;
-            nextState.ringPos1[move0.index] = move0.finalPos;
-            nextState.playerID = 1;
-            flipMarkers(move0.startPos, move0.finalPos, nextState);
-        }
-        move a = possibleRowMoves[++lastRowMove].first;
-        move b = possibleRowMoves[lastRowMove].second;
-        nextState.removeRowAndRing(a);
-        storeMove(nextState, RemoveRow, coordinateToMove(a.startPos.first, a.startPos.second), coordinateToMove(a.finalPos.first, a.finalPos.second));
-        if (playerID == 1)
-            storeMove(nextState, RemoveRing, coordinateToMove(ringPos2[a.index].first, ringPos2[a.index].second));
-        else
-            storeMove(nextState, RemoveRing, coordinateToMove(ringPos1[a.index].first, ringPos1[a.index].second));
-        if (b.direction > 0)
-        {
-            nextState.removeRowAndRing(b);
-            storeMove(nextState, RemoveRow, coordinateToMove(b.startPos.first, b.startPos.second), coordinateToMove(b.finalPos.first, b.finalPos.second));
-            if (playerID == 1)
-                storeMove(nextState, RemoveRing, coordinateToMove(ringPos2[b.index].first, ringPos2[b.index].second));
-            else
-                storeMove(nextState, RemoveRing, coordinateToMove(ringPos1[b.index].first, ringPos1[b.index].second));
-        }
     }
     else
     {
         lastRowMove = 0;
         possibleRows.clear();
         possibleRowMoves.clear();
+        if(removeBeforeMove){
+            if(currentMove == moves.size()){
+                if(lastRowMoveBeforeMove != possibleRowMovesBeforeMove.size()){
+                    nextState.removeAndStore(possibleRowMovesBeforeMove[lastRowMoveBeforeMove]);
+                    if((score1 == 3&&playerID ==2)||(score2 == 3&&playerID ==1))
+                        return true;
+                    moves.clear();
+                    currentMove = 0;
+                    possibleMoves();
+                    ++lastRowMoveBeforeMove;
+                }
+            }
+            else{
+                nextState.removeAndStore(possibleRowMovesBeforeMove[lastRowMoveBeforeMove-1]);
+                if((score1 == 3&&playerID ==2)||(score2 == 3&&playerID ==1))
+                    return true;
+            }
+        }
         if (moves.empty())
             possibleMoves();
-        if (currentMove < moves.size())
+        if (currentMove != moves.size())
         {
             storeMove(nextState, MoveRing, coordinateToMove(moves[currentMove].startPos.first, moves[currentMove].startPos.second), coordinateToMove(moves[currentMove].finalPos.first, moves[currentMove].finalPos.second));
             moveRing(moves[currentMove], nextState);
+            move0 = moves[currentMove];
             makeRows(nextState, flipMarkers(moves[currentMove].startPos, moves[currentMove].finalPos, nextState), moves[currentMove].startPos, moves[currentMove].finalPos);
             if (possibleRows.empty())
                 return true;
-            makeAllPossibleCombinations();
-            nextState.removeRowAndRing(possibleRowMoves[lastRowMove].first);
-            move m = possibleRowMoves[lastRowMove].first;
-            storeMove(nextState, RemoveRow, coordinateToMove(m.startPos.first, m.startPos.second), coordinateToMove(m.finalPos.first, m.finalPos.second));
-            if (playerID == 1)
-                storeMove(nextState, RemoveRing, coordinateToMove(ringPos2[m.index].first, ringPos2[m.index].second));
-            else
-                storeMove(nextState, RemoveRing, coordinateToMove(ringPos1[m.index].first, ringPos1[m.index].second));
-            if (possibleRowMoves[lastRowMove].second.direction > 0)
-            {
-                m = possibleRowMoves[lastRowMove].second;
-                nextState.removeRowAndRing(m);
-                storeMove(nextState, RemoveRow, coordinateToMove(m.startPos.first, m.startPos.second), coordinateToMove(m.finalPos.first, m.finalPos.second));
-                if (playerID == 1)
-                    storeMove(nextState, RemoveRing, coordinateToMove(ringPos2[m.index].first, ringPos2[m.index].second));
-                else
-                    storeMove(nextState, RemoveRing, coordinateToMove(ringPos1[m.index].first, ringPos1[m.index].second));
-            }
+            makeAllPossibleCombinations(possibleRowMoves);
+            nextState.removeAndStore(possibleRowMoves[0]);
             currentMove++;
             moveExecuted = true;
             nextState.playerID = 3 - playerID;
@@ -632,9 +564,25 @@ void State::addRing(std::pair<int, int> coor, State &nextState)
         nextState.playerID = 1;
     }
     move0 = move(coordinateToMove(coor.first, coor.second), std::pair<int, int>(0, 0));
-    nextState.moves.clear();
-    nextState.currentMove = 0;
-    nextState.move0 = move(std::pair<int, int>(0, 0), std::pair<int, int>(0, 0));
+}
+void State::moveRing(move pos, State &nextState)
+{
+    if (playerID == 1)
+    {
+        nextState.ringPlayer2[boardSize + pos.startPos.first][boardSize + pos.startPos.second] = 0;
+        nextState.ringPlayer2[boardSize + pos.finalPos.first][boardSize + pos.finalPos.second] = 1;
+        nextState.markerPlayer2[boardSize + pos.startPos.first][boardSize + pos.startPos.second] = 1;
+        nextState.numMarkers2++;
+        nextState.ringPos2[pos.index] = pos.finalPos;
+    }
+    else
+    {
+        nextState.ringPlayer1[boardSize + pos.startPos.first][boardSize + pos.startPos.second] = 0;
+        nextState.ringPlayer1[boardSize + pos.finalPos.first][boardSize + pos.finalPos.second] = 1;
+        nextState.markerPlayer1[boardSize + pos.startPos.first][boardSize + pos.startPos.second] = 1;
+        nextState.numMarkers1++;
+        nextState.ringPos1[pos.index] = pos.finalPos;
+    }
 }
 bool State::checkIntersection(const move &a, const move &b)
 {
@@ -732,12 +680,12 @@ void State::removeRowAndRing(const move &a)
         ++score2;
     }
 }
-void State::makeAllPossibleCombinations()
+void State::makeAllPossibleCombinations(vector<std::pair<move,move> > &rowMoves)
 {
     if ((playerID == 1 && ringPos2.size() == 3) || (playerID == 2 && ringPos1.size() == 3))
     {
         possibleRows[0].index = 2;
-        possibleRowMoves.push_back(std::pair<move, move>(possibleRows[0], move(-1)));
+        rowMoves.push_back(std::pair<move, move>(possibleRows[0], move(-1)));
     }
     else if ((playerID == 1 && ringPos2.size() > 3) || (playerID == 2 && ringPos1.size() > 3))
     {
@@ -746,8 +694,8 @@ void State::makeAllPossibleCombinations()
             maxRings = ringPos2.size();
         else
             maxRings = ringPos1.size();
-        for (unsigned int i = 0; i < possibleRows.size(); ++i)
-            for (unsigned int j = i + 1; j < possibleRows.size(); ++i)
+        for (size_t i = 0; i != possibleRows.size(); ++i)
+            for (size_t j = i + 1; j != possibleRows.size(); ++i)
             {
                 move a = possibleRows[i];
                 move b = possibleRows[j];
@@ -762,39 +710,19 @@ void State::makeAllPossibleCombinations()
                     if ((playerID == 1 && ringPos2.size() == 4) || (playerID == 2 && ringPos1.size() == 4))
                     {
                         possibleRows.clear();
-                        possibleRowMoves.push_back(std::pair<move, move>(a, b));
+                        rowMoves.push_back(std::pair<move, move>(a, b));
                         return;
                     }
-                    possibleRowMoves.push_back(std::pair<move, move>(a, b));
+                    rowMoves.push_back(std::pair<move, move>(a, b));
                 }
             }
-        if (possibleRowMoves.size() == 0)
-            for (unsigned int i = 0; i < possibleRows.size(); ++i)
+        if (rowMoves.size() == 0)
+            for (size_t i = 0; i != possibleRows.size(); ++i)
                 for (int r = maxRings; r >= 0; --r)
                 {
                     possibleRows[i].index = r;
-                    possibleRowMoves.push_back(std::pair<move, move>(possibleRows[0], move(-1)));
+                    rowMoves.push_back(std::pair<move, move>(possibleRows[0], move(-1)));
                 }
-    }
-}
-void State::moveRing(move pos, State &nextState)
-{
-    move0 = move(coordinateToMove(pos.startPos.first, pos.startPos.second), coordinateToMove(pos.finalPos.first, pos.finalPos.second));
-    if (playerID == 1)
-    {
-        nextState.ringPlayer2[boardSize + pos.startPos.first][boardSize + pos.startPos.second] = 0;
-        nextState.ringPlayer2[boardSize + pos.finalPos.first][boardSize + pos.finalPos.second] = 1;
-        nextState.markerPlayer2[boardSize + pos.startPos.first][boardSize + pos.startPos.second] = 1;
-        nextState.numMarkers2++;
-        nextState.ringPos2[pos.index] = pos.finalPos;
-    }
-    else
-    {
-        nextState.ringPlayer1[boardSize + pos.startPos.first][boardSize + pos.startPos.second] = 0;
-        nextState.ringPlayer1[boardSize + pos.finalPos.first][boardSize + pos.finalPos.second] = 1;
-        nextState.markerPlayer1[boardSize + pos.startPos.first][boardSize + pos.startPos.second] = 1;
-        nextState.numMarkers1++;
-        nextState.ringPos1[pos.index] = pos.finalPos;
     }
 }
 bool State::flip(int a, int b)
@@ -818,7 +746,7 @@ void State::makeRows(State &nextState, vector<std::pair<int, int>> flipped, std:
     bool check = true, once = false;
     if (start.first - start.second == end.first - end.second)
     {
-        for (unsigned int f = 0; f != flipped.size(); ++f)
+        for (size_t f = 0; f != flipped.size(); ++f)
         {
             if (f > 0 && std::abs(flipped[f - 1].first - flipped[f].first) > 1 && !once)
                 check = true;
@@ -845,7 +773,7 @@ void State::makeRows(State &nextState, vector<std::pair<int, int>> flipped, std:
     }
     else if (start.first == end.first)
     {
-        for (unsigned int f = 0; f != flipped.size(); ++f)
+        for (size_t f = 0; f != flipped.size(); ++f)
         {
             if (f > 0 && std::abs(flipped[f - 1].second - flipped[f].second) > 1 && !once)
                 check = true;
@@ -871,7 +799,7 @@ void State::makeRows(State &nextState, vector<std::pair<int, int>> flipped, std:
     }
     else if (start.second == end.second)
     {
-        for (unsigned int f = 0; f != flipped.size(); ++f)
+        for(size_t f = 0; f != flipped.size(); ++f)
         {
             if (f > 0 && std::abs(flipped[f - 1].first - flipped[f].first) > 1 && !once)
                 check = true;
