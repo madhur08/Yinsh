@@ -64,10 +64,10 @@ private:
   vector<std::pair<int, int> > flipMarkers(std::pair<int, int>, std::pair<int, int>, State &);
   void storeMove(State &, moveType, std::pair<int, int>, std::pair<int, int>);
   bool flip(int, int);
-  vector<move> checkRow(std::pair<int, int>, int);
+  vector<move> checkRow(std::pair<int, int>, int, State&);
   void makeAllPossibleCombinations(vector<std::pair<move,move> > &);
-  void removeRowAndRing(const move &);
-  void removeAndStore(const std::pair<move,move> &);
+  void removeRowAndRing(const move &, State&);
+  void removeAndStore(std::pair<move,move> &, State&);
   void makeRows(State &, vector<std::pair<int, int>>, std::pair<int, int>, std::pair<int, int>);
   bool checkIntersection(const move&, const move&);
 

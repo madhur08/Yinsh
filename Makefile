@@ -6,7 +6,7 @@ SDIR = src
 IDIR = include
 _OBJECTS = main.o State.o Search.o
 OBJECTS = $(patsubst %, $(ODIR)/%,$(_OBJECTS))
-CFLAGS = -Wall -Wextra -O0 -ggdb -std=c++11 -pedantic
+CFLAGS = -Wall -Wextra -O0 -g -std=c++11 -pedantic
 
 all: $(OBJECTS)
 	@mkdir -p bin

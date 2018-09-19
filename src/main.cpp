@@ -7,10 +7,9 @@ using namespace std;
 // Sample C++ Code
 int main()
 {
-    fstream fin;
-    fin.open("/home/ishu/power7thsem/ai/assignment2/Yinsh/Python/input.txt",fstream::in);
-    bool ncm = fin.is_open();
-
+    //fstream fin;
+    auto &fin = cin;
+    //fin.open("/Users/madhur/Documents/Sem 7/COL333/Assignments/Assignment 2/Yinsh/Python/input.txt",fstream::in);
     int playerID, boardSize, timeLimit;
     string move;
     // Get input from server about game specifications
