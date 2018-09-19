@@ -30,12 +30,9 @@ private:
     move();
   };
   int playerID, boardSize;
+  int moveCount;
   int numMarkers1, numMarkers2;
   int score1, score2;
-  vector<vector<bool> > markerPlayer1;
-  vector<vector<bool> > markerPlayer2;
-  vector<vector<bool> > ringPlayer1;
-  vector<vector<bool> > ringPlayer2;
   int reachability1, reachability2;
   vector<std::pair<int, int> > ringPos1;
   vector<std::pair<int, int> > ringPos2;
@@ -53,8 +50,6 @@ private:
 
   void appendToCurrentMove(std::string);
   void initializeMatrix(vector<vector<bool> > &, int);
-  std::pair<int, int> moveToCoordinate(int, int);
-  std::pair<int, int> coordinateToMove(int, int);
   int possibleMoves(bool pushMove = 1);
   int addPossibleMoves(std::pair<int, int>, int, bool pushMove);
   std::pair<int, int> maxIncrement(std::pair<int, int>, int);
@@ -72,6 +67,13 @@ private:
   bool checkIntersection(const move&, const move&);
 
 public:
+  //Make them public
+  std::pair<int, int> moveToCoordinate(int, int);
+  std::pair<int, int> coordinateToMove(int, int);
+  vector<vector<bool> > markerPlayer1;
+  vector<vector<bool> > markerPlayer2;
+  vector<vector<bool> > ringPlayer1;
+  vector<vector<bool> > ringPlayer2;
   std::string getMove();
   std::pair<int,int> getRing1(int);
   std::pair<int,int> getRing2(int);

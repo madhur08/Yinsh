@@ -4,10 +4,11 @@
 class Search
 {
 private:
-  State state;
   int playerID;
   double  w1,w2,w3,w4,w5,w6,w7,w8;
 public:
+  //Make it public
+  State state;
   int branches;
   Search(int, int, std::string);
   Search(int, int);
