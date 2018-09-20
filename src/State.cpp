@@ -37,7 +37,6 @@ State::move::move()
 }
 State::State(const State &state) : move0(-1)
 {
-    hits = state.hits;
     moveCount = state.moveCount;
     playerID = state.playerID;
     boardSize = state.boardSize;
@@ -57,8 +56,6 @@ State::State(const State &state) : move0(-1)
 }
 State::State(int playerID, int boardSize) : move0(-1)
 {
-    hits = new int;
-    *hits = 0;
     moveCount = 0;
     this->playerID = 3 - playerID;
     this->boardSize = boardSize;
@@ -74,8 +71,6 @@ State::State(int playerID, int boardSize) : move0(-1)
 }
 State::State(int playerID, int boardSize, std::string move) : move0(-1)
 {
-    hits = new int;
-    *hits = 0;
     moveCount = 0;
     this->playerID = 3 - playerID;
     this->boardSize = boardSize;
@@ -175,7 +170,6 @@ void State::playMove(std::string str)
     possibleRowMoves.clear();
     possibleRowMovesBeforeMove.clear();
     move0 = move(-1);
-    //std::cerr << "input = " << str << std::endl;
     while (ss >> item)
     {
         if (item == "S")
@@ -411,19 +405,9 @@ int State::addPossibleMovesDir(State& nextState,int x, int y, int max, int dir, 
     int a = dir == 3 ? 1 : dir == 2 ? 0 : 1;
     int b = dir == 3 ? 1 : dir == 2 ? 1 : 0;
     int moveCount = 0;
-    // std::cerr<<"x = "<<x<<"y = "<<y<<std::endl;
-    // std::cerr<<"x_ex = "<<(x + max * s * a)<<"y_ex = "<<(y + max * s * b)<<std::endl;
-    // auto out = coordinateToMove((x + max * s * a), (y + max * s * b));
-    // std::cerr<<"r = "<<out.first<<"p = "<<out.second<<"\n\n";
+   
     for (int p = 1; p <= max; ++p)
     {
-        if (std::abs(x + p * s * a) > 5 || std::abs(y + p * s * b) > 5)
-        {
-            std::cerr << "x = " << x << " y = " << y << std::endl;
-            std::cerr << "x_ex = " << (x + p * s * a) << " y_ex = " << (y + p * s * b) << std::endl;
-            auto out = coordinateToMove((x + p * s * a), (y + p * s * b));
-            std::cerr << "r = " << out.first << " p = " << out.second << "\n\n";
-        }
         if (nextState.ringPlayer1[boardSize + x + p * s * a][boardSize + y + p * s * b] == 1 || nextState.ringPlayer2[boardSize + x + p * s * a][boardSize + y + p * s * b] == 1)
             break;
         else if (nextState.markerPlayer1[boardSize + x + p * s * a][boardSize + y + p * s * b] == 1 || nextState.markerPlayer2[boardSize + x + p * s * a][boardSize + y + p * s * b] == 1)
@@ -537,17 +521,8 @@ bool State::executeNext(State &nextState)
                     std::pair<int, int> coor = moveToCoordinate(move0.startPos.first, p);
                     if (ringPlayer1[boardSize + coor.first][boardSize + coor.second] == 0 && ringPlayer2[boardSize + coor.first][boardSize + coor.second] == 0)
                     {
-                        //std::cerr<<"ring = "<<move0.startPos.first<<" pos = "<<p<<std::endl;
                         addRing(coor, nextState);
                         move0 = move(std::pair<int, int>(move0.startPos.first, p), std::pair<int, int>(0, 0));
-                        // if (std::abs(coor.first) > 5 || std::abs(coor.second) > 5)
-                        // {
-                        //     std::cerr << "ring = " << move0.startPos.first << " pos = " << p << std::endl;
-                        //     std::cerr << "x = " << coor.first << " y = " << coor.second << std::endl;
-                        //     auto out = coordinateToMove(coor.first, coor.first);
-                        //     std::cerr << "ring = " << out.first << " pos = " << out.second << std::endl
-                        //               << std::endl;
-                        // }
                         storeMove(nextState, AddRing, std::pair<int, int>(move0.startPos.first, p));
                         return true;
                         ;
@@ -564,17 +539,8 @@ bool State::executeNext(State &nextState)
                     std::pair<int, int> coor = moveToCoordinate(r, p);
                     if (ringPlayer1[boardSize + coor.first][boardSize + coor.second] == 0 && ringPlayer2[boardSize + coor.first][boardSize + coor.second] == 0)
                     {
-                        //std::cerr<<"ring = "<<r<<" pos = "<<p<<std::endl<<std::endl;
                         addRing(coor, nextState);
                         move0 = move(std::pair<int, int>(r, p), std::pair<int, int>(0, 0));
-                        // if (std::abs(coor.first) > 5 || std::abs(coor.second) > 5)
-                        // {
-                        //     std::cerr << "ring = " << r << " pos = " << p << std::endl;
-                        //     std::cerr << "x = " << coor.first << " y = " << coor.second << std::endl;
-                        //     auto out = coordinateToMove(coor.first, coor.first);
-                        //     std::cerr << "ring = " << out.first << " pos = " << out.second << std::endl
-                        //               << std::endl;
-                        // }
                         storeMove(nextState, AddRing, std::pair<int, int>(r, p));
                         return true;
                     }
@@ -645,9 +611,7 @@ bool State::executeNext(State &nextState)
                 ++currentMove;
                 return true;
             }
-            if (possibleRows[0].startPos.first == -4 && possibleRows[0].startPos.second == -5 && playerID == 1){
-                (*hits)++;
-            }
+
             makeAllPossibleCombinations(possibleRowMoves, nextState);
             removeAndStore(possibleRowMoves[0], nextState);
             moveExecuted = true;
@@ -675,8 +639,6 @@ void State::addRing(std::pair<int, int> coor, State &nextState)
         nextState.ringPlayer1[boardSize + coor.first][boardSize + coor.second] = 1;
         nextState.playerID = 1;
     }
-    //std::cerr<<"x = "<<coor.first<<" y = "<<coor.second<<std::endl;
-    //std::cerr<<"ring = "<<move0.startPos.first<<" pos = "<<move0.startPos.second<<std::endl<<std::endl;
 }
 void State::moveRing(move pos, State &nextState)
 {

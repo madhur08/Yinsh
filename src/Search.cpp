@@ -1,7 +1,7 @@
 #include "Search.h"
 #include <float.h>
 #define winningScore 3
-Search::Search(int boardSize, int timeLimit, std::string move)
+Search::Search(int boardSize, std::string move)
     : state(1, boardSize, move)
 {
     playerID = 2;
@@ -14,7 +14,7 @@ Search::Search(int boardSize, int timeLimit, std::string move)
     w7=1;
     w8=-1;
 }
-Search::Search(int boardSize, int timeLimit)
+Search::Search(int boardSize)
     : state(1, boardSize)
 {
     playerID = 1;

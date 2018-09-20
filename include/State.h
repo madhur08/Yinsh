@@ -29,7 +29,6 @@ private:
     move(int);
     move();
   };
-  int *hits;
   int playerID, boardSize;
   int moveCount;
   int numMarkers1, numMarkers2;

@@ -9,8 +9,8 @@ private:
   double  w1,w2,w3,w4,w5,w6,w7,w8;
 public:
   int branches;
-  Search(int, int, std::string);
-  Search(int, int);
+  Search(int, std::string);
+  Search(int);
   std::string nextMove (int depth );
   double funcMin( double alpha, double beta, int depth, State& current );
   double  sumDistFromCenter (int player, State& current);
