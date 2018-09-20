@@ -36,7 +36,7 @@ std::string Search::nextMove (int depth)
     //int nextstate;
     double alpha=-1*DBL_MAX, beta=DBL_MAX, value=-1*DBL_MAX;
     double fvalue;
-    State nextstate(state);
+    nextstate = state;
     //for(int i=0; i < n; i++)
     branches=0;
     while(true)
