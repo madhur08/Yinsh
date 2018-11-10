@@ -40,6 +40,7 @@ State::State(const State &state) : move0(-1)
     moveCount = state.moveCount;
     playerID = state.playerID;
     boardSize = state.boardSize;
+    seqSize = state.seqSize;
     numMarkers1 = state.numMarkers1;
     numMarkers2 = state.numMarkers2;
     score1 = state.score1;
@@ -54,11 +55,12 @@ State::State(const State &state) : move0(-1)
     lastRowMoveBeforeMove = 0;
     lastRowMove = currentMove = reachability1 = reachability2 = 0;
 }
-State::State(int playerID, int boardSize) : move0(-1)
+State::State(int playerID, int boardSize, int seqSize) : move0(-1)
 {
     moveCount = 0;
     this->playerID = 3 - playerID;
     this->boardSize = boardSize;
+    this->seqSize = seqSize;
     score1 = score2 = numMarkers2 = numMarkers1 = reachability1 = reachability2 = 0;
     lastRowMove = currentMove = 0;
     initializeMatrix(markerPlayer1, boardSize);
@@ -69,11 +71,12 @@ State::State(int playerID, int boardSize) : move0(-1)
     lastRowMoveBeforeMove = 0;
     playMove(std::string("P 0 0\n"));
 }
-State::State(int playerID, int boardSize, std::string move) : move0(-1)
+State::State(int playerID, int boardSize, int seqSize, std::string move) : move0(-1)
 {
     moveCount = 0;
     this->playerID = 3 - playerID;
     this->boardSize = boardSize;
+    this->seqSize = seqSize;
     score1 = score2 = numMarkers2 = numMarkers1 = reachability1 = reachability2 = 0;
     lastRowMove = currentMove = 0;
     initializeMatrix(markerPlayer1, boardSize);

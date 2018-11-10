@@ -29,7 +29,7 @@ private:
     move(int);
     move();
   };
-  int playerID, boardSize;
+  int playerID, boardSize, seqSize;
   int moveCount;
   int numMarkers1, numMarkers2;
   int score1, score2;
