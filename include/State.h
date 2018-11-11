@@ -86,8 +86,8 @@ public:
   void playMove(std::string);
   bool executeNext(State &);
   State() = default;
-  State(int, int, int);
   State(int, int, int, std::string);
+  State(int, int, int);
   State(const State &);
 };
 

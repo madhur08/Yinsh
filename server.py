@@ -143,17 +143,18 @@ class Server:
                 """
                 if( (client_0 < len(self.communicator_list)) and (client_1) < len(self.communicator_list)):
                         dataString = '{id} {size} {time} {seq}'.format(id=1, size=n, time=timelimit, seq=s)
+                        print(dataString)   
                         data = {'meta':'', 'action':'INIT','data':dataString}
                         self.SendData2Client(client_0, json.dumps(data))
                         dataString = '{id} {size} {time} {seq}'.format(id=2, size=n, time=timelimit, seq=s)
                         data = {'meta':'', 'action':'INIT','data':dataString}
-                        self.SendData2Client(client_1, json.dumps(data))                        
+                        self.SendData2Client(client_1, json.dumps(data))                    
                         while(True):
                                 data = self.RecvDataFromClient(client_0)
                                 self.SendData2Client(client_1, data)
                                 if not data:
                                         break
-                                print(str(data) + 'Received from client 0')
+                                #print(str(data) + 'Received from client 0')
                                 if not self.log_file_handle is None:
                                     self.log_file_handle.write(str(data) + ' Received from client 0\n')
                                 data = json.loads(data)
@@ -163,7 +164,9 @@ class Server:
                                         break           
                                 data = self.RecvDataFromClient(client_1)
                                 self.SendData2Client(client_0, data)
-                                print(str(data) + 'Received from client 1')
+                                #print(str(data) + 'Received from client 1')
+                                data1 = json.loads(data)
+                                print(str(data1['data']))
                                 if not self.log_file_handle is None:
                                     self.log_file_handle.write(str(data) + ' Received from client 1\n')
                                 if not data:
