@@ -568,7 +568,6 @@ bool State::executeNext(State &nextState)
         flipMarkers(move0.startPos, move0.finalPos, nextState);
         removeAndStore(possibleRowMoves[++lastRowMove], nextState);
         nextState.playerID = 3 - playerID;
-        std::cerr<<"I WAS IN SECTION 1\n";
     }
     else
     {
@@ -591,10 +590,8 @@ bool State::executeNext(State &nextState)
                     currentMove = 0;
                     ++lastRowMoveBeforeMove;
                     possibleMoves(nextState);
-                    std::cerr<<"I WAS IN SECTION 2\n";
                 }
                 else{
-                    std::cerr<<"FALSE AT STAGE ONE\n";
                     return false;
                 }
             }
@@ -603,7 +600,6 @@ bool State::executeNext(State &nextState)
                 removeAndStore(possibleRowMovesBeforeMove[lastRowMoveBeforeMove - 1], nextState);
                 if ((nextState.score1 == 3 && playerID == 2) || (nextState.score1 == 3 && playerID == 1))
                     return true;
-                std::cerr<<"I WAS IN SECTION 3\n";
             }
         }
         if (moves.empty())

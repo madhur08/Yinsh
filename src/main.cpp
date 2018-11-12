@@ -7,7 +7,7 @@ using namespace std;
 // Sample C++ Code
 int main()
 {
-    int playerID, boardSize, timeLimit, seqSize, depth = 4;
+    int playerID, boardSize, timeLimit, seqSize, depth = 5;
     string move;
     // Get input from server about game specifications
     ifstream fin;

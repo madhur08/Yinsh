@@ -37,7 +37,6 @@ std::string Search::nextMove(int depth)
     //int nextstate;
     double alpha = -1 * DBL_MAX, beta = DBL_MAX, value = -1 * DBL_MAX;
     double fvalue;
-    bool updated = false;
     nextstate = state;
     //for(int i=0; i < n; i++)
     branches = 0;
@@ -54,10 +53,6 @@ std::string Search::nextMove(int depth)
         branches++;
         if (fvalue > value)
         {
-            if(!updated){   
-                std::cerr<<"Updated\n";
-                updated^=1;
-            }
             state = newState;
             value = fvalue;
         }
