@@ -165,13 +165,12 @@ class Server:
                                 data = self.RecvDataFromClient(client_1)
                                 self.SendData2Client(client_0, data)
                                 #print(str(data) + 'Received from client 1')
-                                data1 = json.loads(data)
-                                print(str(data1['data']))
                                 if not self.log_file_handle is None:
                                     self.log_file_handle.write(str(data) + ' Received from client 1\n')
                                 if not data:
                                         break
                                 data = json.loads(data)
+                                print(str(data['data']))
                                 if data['action'] == 'FINISH' or data['action'] == 'KILLPROC':
                                         # if not self.log_file_handle is None:
                                                 # self.log_file_handle.write(data['meta'])

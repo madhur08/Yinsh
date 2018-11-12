@@ -1,29 +1,37 @@
 #include <iostream>
-
+#include <fstream>
 using namespace std;
 
 // Sample C++ Code 
 int main(int argc, char** argv) {
     
-    int player_id, board_size, time_limit;
+    int player_id, board_size, time_limit,seqNum;
     string move;
-    // Get input from server about game specifications
-    cin >> player_id >> board_size >> time_limit;
+    ifstream f;
+    f.open("input.txt");
 
+    // Get input from server about game specifications
+    cin >> player_id >> board_size >> time_limit >> seqNum;
+    std::cerr<<player_id<<board_size<<time_limit<<seqNum<<std::endl;
+    cin.ignore();
     if(player_id == 2) {
         // Get other player's move
-        cin>>move; 
-        
+        getline(cin,move); 
+       
+        getline(f,move);
         while(true) {
-            cout<<"P 1 0"<<endl;
-            cin>>move;
+            cout<<move<<endl;
+            getline(cin,move); 
+            getline(f,move);
         }
     }   
     else if(player_id == 1) {
         while(true) {
-            cout<<"P 0 0"<<endl;
-            cin>>move; 
+            getline(f,move);
+            cout<<move<<endl; 
+            getline(cin,move); 
         }
     }
+    f.close();
     return 0;
 }

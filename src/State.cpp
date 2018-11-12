@@ -448,21 +448,24 @@ std::pair<int, int> State::maxIncrement(std::pair<int, int> position, int direct
 {
     std::pair<int, int> maxInc;
     float x = position.first, y = position.second;
+    double radius = 5.57;
+    if (boardSize == 5)
+        radius = 4.6;
     if (direction == 1)
     {
-        double a = (y - 2 * x), b = std::pow(4 * 5.57 * 5.57 - 3 * y * y, 0.5);
+        double a = (y - 2 * x), b = std::pow(4 * radius * radius - 3 * y * y, 0.5);
         maxInc.first = (a - b) * 0.5;
         maxInc.second = (a + b) * 0.5;
     }
     else if (direction == 2)
     {
-        double a = (x - 2 * y), b = std::pow(4 * 5.57 * 5.57 - 3 * x * x, 0.5);
+        double a = (x - 2 * y), b = std::pow(4 * radius * radius - 3 * x * x, 0.5);
         maxInc.first = (a - b) * 0.5;
         maxInc.second = (a + b) * 0.5;
     }
     else
     {
-        double a = -(x + y), b = std::pow(6 * x * y + 4 * 5.57 * 5.57 - 3 * x * x - 3 * y * y, 0.5);
+        double a = -(x + y), b = std::pow(6 * x * y + 4 * radius * radius - 3 * x * x - 3 * y * y, 0.5);
         maxInc.first = (a - b) * 0.5;
         maxInc.second = (a + b) * 0.5;
     }
@@ -565,6 +568,7 @@ bool State::executeNext(State &nextState)
         flipMarkers(move0.startPos, move0.finalPos, nextState);
         removeAndStore(possibleRowMoves[++lastRowMove], nextState);
         nextState.playerID = 3 - playerID;
+        std::cerr<<"I WAS IN SECTION 1\n";
     }
     else
     {
@@ -587,15 +591,19 @@ bool State::executeNext(State &nextState)
                     currentMove = 0;
                     ++lastRowMoveBeforeMove;
                     possibleMoves(nextState);
+                    std::cerr<<"I WAS IN SECTION 2\n";
                 }
-                else
+                else{
+                    std::cerr<<"FALSE AT STAGE ONE\n";
                     return false;
+                }
             }
             else
             {
                 removeAndStore(possibleRowMovesBeforeMove[lastRowMoveBeforeMove - 1], nextState);
                 if ((nextState.score1 == 3 && playerID == 2) || (nextState.score1 == 3 && playerID == 1))
                     return true;
+                std::cerr<<"I WAS IN SECTION 3\n";
             }
         }
         if (moves.empty())
@@ -764,12 +772,12 @@ void State::makeAllPossibleCombinations(vector<std::pair<move, move>> &rowMoves,
 {
     if (possibleRows.empty())
         return;
-    else if ((playerID == 1 && nextState.ringPos2.size() == (unsigned int)(boardSize) - 2) || (playerID == 2 && nextState.ringPos1.size() == (unsigned int)(boardSize) - 2))
+    else if ((playerID == 1 && nextState.ringPos2.size() == (unsigned int)(boardSize - 2)) || (playerID == 2 && nextState.ringPos1.size() == (unsigned int)(boardSize - 2)))
     {
         possibleRows[0].index = 2;
         rowMoves.push_back(std::pair<move, move>(possibleRows[0], move(-1)));
     }
-    else if ((playerID == 1 && nextState.ringPos2.size() > (unsigned int)(boardSize) - 2) || (playerID == 2 && nextState.ringPos1.size() > (unsigned int)(boardSize) - 2))
+    else if ((playerID == 1 && nextState.ringPos2.size() > (unsigned int)(boardSize - 2)) || (playerID == 2 && nextState.ringPos1.size() > (unsigned int)(boardSize - 2)))
     {
         int maxRings;
         if (playerID == 1)
@@ -789,7 +797,7 @@ void State::makeAllPossibleCombinations(vector<std::pair<move, move>> &rowMoves,
                             a.index = r1;
                             b.index = r2;
                         }
-                    if ((playerID == 1 && nextState.ringPos2.size() == (unsigned int)(boardSize) - 1) || (playerID == 2 && nextState.ringPos1.size() == (unsigned int)(boardSize) - 1))
+                    if ((playerID == 1 && nextState.ringPos2.size() == (unsigned int)(boardSize - 1)) || (playerID == 2 && nextState.ringPos1.size() == (unsigned int)(boardSize - 1)))
                     {
                         possibleRows.clear();
                         rowMoves.push_back(std::pair<move, move>(a, b));
@@ -847,16 +855,16 @@ void State::makeRows(State &nextState, vector<std::pair<int, int>> flipped, std:
                 check ^= 1;
                 if (!dir.empty())
                     once = true;
-                if (((nextState.ringPos1.size() == (unsigned int)(boardSize) - 2 && playerID == 2) || (nextState.ringPos2.size() == (unsigned int)(boardSize) - 2 && playerID == 1)) && once == true)
+                if (((nextState.ringPos1.size() == (unsigned int)(boardSize - 2) && playerID == 2) || (nextState.ringPos2.size() == (unsigned int)(boardSize - 2) && playerID == 1)) && once == true)
                     return;
             }
             vector<move> dir1 = checkRow(flipped[f], 2, nextState);
             possibleRows.insert(possibleRows.end(), dir1.begin(), dir1.end());
-            if (((nextState.ringPos1.size() == (unsigned int)(boardSize) - 2 && playerID == 2) || (nextState.ringPos2.size() == (unsigned int)(boardSize) - 2 && playerID == 1)) && !dir1.empty())
+            if (((nextState.ringPos1.size() == (unsigned int)(boardSize - 2) && playerID == 2) || (nextState.ringPos2.size() == (unsigned int)(boardSize - 2) && playerID == 1)) && !dir1.empty())
                 return;
             vector<move> dir2 = checkRow(flipped[f], 1, nextState);
             possibleRows.insert(possibleRows.end(), dir2.begin(), dir2.end());
-            if (((nextState.ringPos1.size() == (unsigned int)(boardSize) - 2 && playerID == 2) || (nextState.ringPos2.size() == (unsigned int)(boardSize) - 2 && playerID == 1)) && !dir2.empty())
+            if (((nextState.ringPos1.size() == (unsigned int)(boardSize - 2) && playerID == 2) || (nextState.ringPos2.size() == (unsigned int)(boardSize - 2) && playerID == 1)) && !dir2.empty())
                 return;
         }
     }
@@ -873,16 +881,16 @@ void State::makeRows(State &nextState, vector<std::pair<int, int>> flipped, std:
                 check ^= 1;
                 if (!dir.empty())
                     once = true;
-                if (((nextState.ringPos1.size() == (unsigned int)(boardSize) - 2 && playerID == 2) || (nextState.ringPos2.size() == (unsigned int)(boardSize) - 2 && playerID == 1)) && !dir.empty())
+                if (((nextState.ringPos1.size() == (unsigned int)(boardSize - 2) && playerID == 2) || (nextState.ringPos2.size() == (unsigned int)(boardSize - 2) && playerID == 1)) && !dir.empty())
                     return;
             }
             vector<move> dir1 = checkRow(flipped[f], 3, nextState);
             possibleRows.insert(possibleRows.end(), dir1.begin(), dir1.end());
-            if (((nextState.ringPos1.size() == (unsigned int)(boardSize) - 2 && playerID == 2) || (nextState.ringPos2.size() == (unsigned int)(boardSize) - 2 && playerID == 1)) && !dir1.empty())
+            if (((nextState.ringPos1.size() == (unsigned int)(boardSize - 2) && playerID == 2) || (nextState.ringPos2.size() == (unsigned int)(boardSize - 2) && playerID == 1)) && !dir1.empty())
                 return;
             vector<move> dir2 = checkRow(flipped[f], 1, nextState);
             possibleRows.insert(possibleRows.end(), dir2.begin(), dir2.end());
-            if (((nextState.ringPos1.size() == (unsigned int)(boardSize) - 2 && playerID == 2) || (nextState.ringPos2.size() == (unsigned int)(boardSize) - 2 && playerID == 1)) && !dir2.empty())
+            if (((nextState.ringPos1.size() == (unsigned int)(boardSize - 2) && playerID == 2) || (nextState.ringPos2.size() == (unsigned int)(boardSize - 2) && playerID == 1)) && !dir2.empty())
                 return;
         }
     }
@@ -899,16 +907,16 @@ void State::makeRows(State &nextState, vector<std::pair<int, int>> flipped, std:
                 check ^= 1;
                 if (!dir.empty())
                     once = true;
-                if (((nextState.ringPos1.size() == (unsigned int)(boardSize) - 2 && playerID == 2) || (nextState.ringPos2.size() == (unsigned int)(boardSize) - 2 && playerID == 1)) && !dir.empty())
+                if (((nextState.ringPos1.size() == (unsigned int)(boardSize - 2) && playerID == 2) || (nextState.ringPos2.size() == (unsigned int)(boardSize - 2) && playerID == 1)) && !dir.empty())
                     return;
             }
             vector<move> dir1 = checkRow(flipped[f], 3, nextState);
             possibleRows.insert(possibleRows.end(), dir1.begin(), dir1.end());
-            if (((nextState.ringPos1.size() == (unsigned int)(boardSize) - 2 && playerID == 2) || (nextState.ringPos2.size() == (unsigned int)(boardSize) - 2 && playerID == 1)) && !dir1.empty())
+            if (((nextState.ringPos1.size() == (unsigned int)(boardSize - 2) && playerID == 2) || (nextState.ringPos2.size() == (unsigned int)(boardSize - 2) && playerID == 1)) && !dir1.empty())
                 return;
             vector<move> dir2 = checkRow(flipped[f], 2, nextState);
             possibleRows.insert(possibleRows.end(), dir2.begin(), dir2.end());
-            if (((nextState.ringPos1.size() == (unsigned int)(boardSize) - 2 && playerID == 2) || (nextState.ringPos2.size() == (unsigned int)(boardSize) - 2 && playerID == 1)) && !dir2.empty())
+            if (((nextState.ringPos1.size() == (unsigned int)(boardSize - 2) && playerID == 2) || (nextState.ringPos2.size() == (unsigned int)(boardSize - 2) && playerID == 1)) && !dir2.empty())
                 return;
         }
     }
@@ -959,7 +967,7 @@ vector<State::move> State::checkRow(std::pair<int, int> coor, int dir, State &ne
             ;
         start = i + 1;
         if (end - start >= seqSize - 1)
-            for (i = start; seqSize - 1 <= end; ++i)
+            for (i = start; i + seqSize - 1 <= end; ++i)
                 moves.push_back(move(1, -1, std::pair<int, int>(coor.first + i, coor.second), std::pair<int, int>(coor.first + i + seqSize - 1, coor.second)));
     }
     if (dir == 2)
@@ -980,7 +988,7 @@ vector<State::move> State::checkRow(std::pair<int, int> coor, int dir, State &ne
     if (dir == 3)
     {
         int i, end, start;
-        for (i = 0; ((playerID == 1) && (boardSize + coor.second + i < 2 * boardSize - 1) && (boardSize + coor.first + i < 2 * boardSize - 1) && (nextState.markerPlayer2[boardSize + coor.first + i][boardSize + coor.second + i] == 1)) || ((playerID == 2) && (boardSize + coor.first + i < 2 * boardSize - 1) && (boardSize + coor.second + i < 2 * boardSize - 1) && (nextState.markerPlayer1[boardSize + coor.first + i][boardSize + coor.second + i] == 1)); ++i)
+        for (i = 0; ((playerID == 1) && (boardSize + coor.second + i < 2 * boardSize + 1) && (boardSize + coor.first + i < 2 * boardSize + 1) && (nextState.markerPlayer2[boardSize + coor.first + i][boardSize + coor.second + i] == 1)) || ((playerID == 2) && (boardSize + coor.first + i < 2 * boardSize + 1) && (boardSize + coor.second + i < 2 * boardSize + 1) && (nextState.markerPlayer1[boardSize + coor.first + i][boardSize + coor.second + i] == 1)); ++i)
             ;
         end = i - 1;
 
