@@ -46,10 +46,10 @@ std::string Search::nextMove(int depth)
         State newState(nextstate);
         if (!nextstate.executeNext(newState))
             break;
-        // if (playerID == 1 && newState.getScore1() == winningScore && (newState.getScore2() - nextstate.getScore2()) == 0) //
-        //     return newState.getMove();
-        // else if (playerID == 2 && newState.getScore2() == winningScore && (newState.getScore1() - nextstate.getScore1()) == 0)
-        //     return newState.getMove();
+        if (playerID == 1 && newState.getScore1() == winningScore && (newState.getScore2() - nextstate.getScore2()) == 0) //
+            return newState.getMove();
+        else if (playerID == 2 && newState.getScore2() == winningScore && (newState.getScore1() - nextstate.getScore1()) == 0)
+            return newState.getMove();
         fvalue = funcMin(alpha, beta, depth - 1, newState);
         branches++;
         if (fvalue > value)
@@ -114,10 +114,10 @@ double Search::funcMax(double alpha, double beta, int depth, State &current)
             State newState(current);
             if (!current.executeNext(newState))
                 break;
-            // if (playerID == 1 && newState.getScore1() == winningScore && (newState.getScore2() - current.getScore2()) == 0) //
-            //     return funcMin(alpha, beta, depth - 1, newState);
-            // else if (playerID == 2 && newState.getScore2() == winningScore && (newState.getScore1() - current.getScore1()) == 0)
-            //     return funcMin(alpha, beta, depth - 1, newState);
+            if (playerID == 1 && newState.getScore1() == winningScore && (newState.getScore2() - current.getScore2()) == 0) //
+                return funcMin(alpha, beta, depth - 1, newState);
+            else if (playerID == 2 && newState.getScore2() == winningScore && (newState.getScore1() - current.getScore1()) == 0)
+                return funcMin(alpha, beta, depth - 1, newState);
             fvalue = funcMin(alpha, beta, depth - 1, newState);
             if (fvalue > value)
                 value = fvalue;
