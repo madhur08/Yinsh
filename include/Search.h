@@ -11,6 +11,7 @@ public:
   int branches;
   Search(int, int, std::string);
   Search(int, int);
+  bool timeToGetAggressive();
   std::string nextMove (int depth );
   double funcMin( double alpha, double beta, int depth, State& current );
   double  sumDistFromCenter (int player, State& current);

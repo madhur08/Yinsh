@@ -75,6 +75,8 @@ public:
   std::string getMove();
   std::pair<int, int> getRing1(int);
   std::pair<int, int> getRing2(int);
+  int getConsecutiveMarkers2();
+  int getConsecutiveMarkers1();
   int numRings1();
   int numRings2();
   int getScore1();

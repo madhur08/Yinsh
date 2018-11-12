@@ -8,10 +8,10 @@ Search::Search(int boardSize, int seqSize, std::string move)
     w1 = 1;
     w2 = 1;
     w3 = 1000;
-    w4 = 10;
+    w4 = 0.5;
     w5 = 1;
-    w6 = 1;
-    w7 = 1;
+    w6 = 50;
+    w7 = 120;
     w8 = -1;
 }
 Search::Search(int boardSize, int seqSize)
@@ -21,11 +21,16 @@ Search::Search(int boardSize, int seqSize)
     w1 = 1;
     w2 = 1;
     w3 = 1000;
-    w4 = 10;
+    w4 = 0.5;
     w5 = 1;
-    w6 = 1;
-    w7 = 1;
+    w6 = 50;
+    w7 = 120;
     w8 = -1;
+}
+bool Search::timeToGetAggressive(){
+    if((playerID == 1 && state.getScore2() == 2)||(playerID == 2 && state.getScore1() == 2))
+        return true;
+    return false;
 }
 void Search::playMove(std::string str)
 {
@@ -144,7 +149,7 @@ double Search::evalFunction(State &current)
         else
         {
 
-            return w3 * (current.getScore1() - current.getScore2()) + w4 * (current.getMarkers1() - current.getMarkers2()) + w6 * (current.sumMarkersInControl1() - current.sumMarkersInControl2()) + w8 * 0.004 * (sumDistFromCenter(1, current) - 0 * sumDistFromCenter(2, current)); // + w5*(current.validMoves1()-current.validMoves2()) + w7*(current.allMoves1()-current.allMoves2())
+            return w3 * (current.getScore1() - current.getScore2()) + w4 * (current.getMarkers1() - current.getMarkers2()) + w6 * (current.sumMarkersInControl1() - current.sumMarkersInControl2()) + w8 * 0.004 * (sumDistFromCenter(1, current) - 0 * sumDistFromCenter(2, current)) + w7*(current.getConsecutiveMarkers1()-current.getConsecutiveMarkers2()); // + w5*(current.validMoves1()-current.validMoves2()) + w7*(current.allMoves1()-current.allMoves2())
         }
     }
     else //our player is 2
@@ -162,7 +167,7 @@ double Search::evalFunction(State &current)
         else
         {
 
-            return -1 * (w3 * (current.getScore1() - current.getScore2()) + w4 * (current.getMarkers1() - current.getMarkers2()) + w6 * (current.sumMarkersInControl1() - current.sumMarkersInControl2()) + w8 * 0.004 * (0 * sumDistFromCenter(1, current) - sumDistFromCenter(2, current))); // + w5*(current.validMoves1()-current.validMoves2())+ w7*(current.allMoves1()-current.allMoves2()) );
+            return -1 * (w3 * (current.getScore1() - current.getScore2()) + w4 * (current.getMarkers1() - current.getMarkers2()) + w6 * (current.sumMarkersInControl1() - current.sumMarkersInControl2()) + w8 * 0.004 * (0 * sumDistFromCenter(1, current) - sumDistFromCenter(2, current)))- w7*(current.getConsecutiveMarkers1()-current.getConsecutiveMarkers2()); // + w5*(current.validMoves1()-current.validMoves2())+ w7*(current.allMoves1()-current.allMoves2()) );
         }
     }
 }

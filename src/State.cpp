@@ -377,6 +377,162 @@ std::pair<int, int> State::coordinateToMove(int x, int y)
     }
     return move;
 }
+int State::getConsecutiveMarkers1()
+{
+    /* Get consecutive markers in NE direction */
+    int total_num = 0;
+    std::pair<int, int> y_limits = maxIncrement(std::pair<int, int>(0, 0), 2);
+    int y_min = std::min(y_limits.first, y_limits.second);
+    int y_max = std::max(y_limits.first, y_limits.second);
+    for (int i = y_min; i <= y_max; ++i)
+    {
+        std::pair<int, int> x_limits = maxIncrement(std::pair<int, int>(0, i), 1);
+        int x_min = std::min(x_limits.first, x_limits.second);
+        int x_max = std::max(x_limits.first, x_limits.second);
+        for (int j = x_min; j <= x_max; ++j)
+        {
+            if (markerPlayer1[boardSize + j][boardSize + i] == 1)
+            {
+                int count = 0;
+                for (int k = j + 1; k < j + seqSize - 1 && k <= x_max; ++k)
+                    if (markerPlayer1[boardSize + k][boardSize + i] == 1)
+                        ++count;
+                if (count >= seqSize - 3)
+                {
+                    j += (seqSize-1);
+                    ++total_num;
+                }
+            }
+        }
+    }
+    /* Get consecutive markers in NW direction */
+    std::pair<int, int> x_limits = maxIncrement(std::pair<int, int>(0, 0), 1);
+    int x_min = std::min(x_limits.first, x_limits.second);
+    int x_max = std::max(x_limits.first, x_limits.second);
+    for (int i = x_min; i <= x_max; ++i)
+    {
+        std::pair<int, int> y_limits = maxIncrement(std::pair<int, int>(i, 0), 2);
+        int y_min = std::min(y_limits.first, y_limits.second);
+        int y_max = std::max(y_limits.first, y_limits.second);
+        for (int j = y_min; j <= y_max; ++j)
+        {
+            if (markerPlayer1[boardSize + i][boardSize + j] == 1)
+            {
+                int count = 0;
+                for (int k = j + 1; k < j + seqSize - 1 && k <= y_max; ++k)
+                    if (markerPlayer1[boardSize + i][boardSize + k] == 1)
+                        ++count;
+                if (count >= seqSize - 3)
+                {
+                    j += (seqSize-1);
+                    ++total_num;
+                }
+            }
+        }
+    }
+
+    /* Get consecutive markers in N direction */
+    for (int i = x_min; i <= x_max; ++i)
+    {
+        std::pair<int, int> y_limits = maxIncrement(std::pair<int, int>(i, 0), 3);
+        int y_min = std::min(y_limits.first, y_limits.second);
+        int y_max = std::max(y_limits.first, y_limits.second);
+        for (int j = y_min; j <= y_max; ++j)
+        {
+            if (markerPlayer1[boardSize + i + j][boardSize + j] == 1)
+            {
+                int count = 0;
+                for (int k = j + 1; k < j + seqSize - 1 && k <= y_max; ++k)
+                    if (markerPlayer1[boardSize + i + k][boardSize + k] == 1)
+                        ++count;
+                if (count >= seqSize - 3)
+                {
+                    j += (seqSize-1);
+                    ++total_num;
+                }
+            }
+        }
+    }
+    return total_num;
+}
+int State::getConsecutiveMarkers2()
+{
+    /* Get consecutive markers in NE direction */
+    int total_num = 0;
+    std::pair<int, int> y_limits = maxIncrement(std::pair<int, int>(0, 0), 2);
+    int y_min = std::min(y_limits.first, y_limits.second);
+    int y_max = std::max(y_limits.first, y_limits.second);
+    for (int i = y_min; i <= y_max; ++i)
+    {
+        std::pair<int, int> x_limits = maxIncrement(std::pair<int, int>(0, i), 1);
+        int x_min = std::min(x_limits.first, x_limits.second);
+        int x_max = std::max(x_limits.first, x_limits.second);
+        for (int j = x_min; j <= x_max; ++j)
+        {
+            if (markerPlayer2[boardSize + j][boardSize + i] == 1)
+            {
+                int count = 0;
+                for (int k = j + 1; k < j + seqSize - 1 && k <= x_max; ++k)
+                    if (markerPlayer2[boardSize + k][boardSize + i] == 1)
+                        ++count;
+                if (count >= seqSize - 3)
+                {
+                    j += (seqSize-1);
+                    ++total_num;
+                }
+            }
+        }
+    }
+    /* Get consecutive markers in NW direction */
+    std::pair<int, int> x_limits = maxIncrement(std::pair<int, int>(0, 0), 1);
+    int x_min = std::min(x_limits.first, x_limits.second);
+    int x_max = std::max(x_limits.first, x_limits.second);
+    for (int i = x_min; i <= x_max; ++i)
+    {
+        std::pair<int, int> y_limits = maxIncrement(std::pair<int, int>(i, 0), 2);
+        int y_min = std::min(y_limits.first, y_limits.second);
+        int y_max = std::max(y_limits.first, y_limits.second);
+        for (int j = y_min; j <= y_max; ++j)
+        {
+            if (markerPlayer2[boardSize + i][boardSize + j] == 1)
+            {
+                int count = 0;
+                for (int k = j + 1; k < j + seqSize - 1 && k <= y_max; ++k)
+                    if (markerPlayer2[boardSize + i][boardSize + k] == 1)
+                        ++count;
+                if (count >= seqSize - 3)
+                {
+                    j += (seqSize-1);
+                    ++total_num;
+                }
+            }
+        }
+    }
+
+    /* Get consecutive markers in N direction */
+    for (int i = x_min; i <= x_max; ++i)
+    {
+        std::pair<int, int> y_limits = maxIncrement(std::pair<int, int>(i, 0), 3);
+        int y_min = std::min(y_limits.first, y_limits.second);
+        int y_max = std::max(y_limits.first, y_limits.second);
+        for (int j = y_min; j <= y_max; ++j)
+        {
+            if (markerPlayer2[boardSize + i + j][boardSize + j] == 1)
+            {
+                int count = 0;
+                for (int k = j + 1; k < j + seqSize - 1 && k <= y_max; ++k)
+                    if (markerPlayer2[boardSize + i + k][boardSize + k] == 1)
+                        ++count;
+                if (count >= seqSize - 3)
+                {
+                    j += (seqSize-1);
+                    ++total_num;
+                }
+            }
+        }
+    }
+    return total_num;
+}
 int State::possibleMoves(State &nextState, bool pushMove)
 {
     int movesNum = 0;
@@ -591,7 +747,8 @@ bool State::executeNext(State &nextState)
                     ++lastRowMoveBeforeMove;
                     possibleMoves(nextState);
                 }
-                else{
+                else
+                {
                     return false;
                 }
             }

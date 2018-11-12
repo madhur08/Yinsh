@@ -7,7 +7,7 @@ using namespace std;
 // Sample C++ Code
 int main()
 {
-    int playerID, boardSize, timeLimit, seqSize, depth = 5;
+    int playerID, boardSize, timeLimit, seqSize, depth = 4;
     string move;
     // Get input from server about game specifications
     ifstream fin;
@@ -23,6 +23,8 @@ int main()
         Search search(boardSize, seqSize, move);
         while (true)
         {
+            // if(search.timeToGetAggressive())
+            //     depth = 5;
             cout << search.nextMove(depth);
             getline(f, move);
             search.playMove(move);
@@ -36,6 +38,8 @@ int main()
         {
             getline(f, move);
             search.playMove(move);
+            // if(search.timeToGetAggressive())
+            //     depth = 5;
             cout << search.nextMove(depth);
         }
     }
